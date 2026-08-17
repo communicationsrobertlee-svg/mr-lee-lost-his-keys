@@ -1,4 +1,95 @@
-T!</span>`,1.4);exitDoor.open=true}
+n style="font-size:.55em">RARY runs away. MAX AURA!</span>`,1.6);
+    particlesAt(player.x,player.y,28,"#f5c44d");return;
+  }
+  deaths++;running=false;levelTransition=true;
+  say(`${reason}<br><span style="font-size:.72em">Sampai Jumpa... Mr Lee wins!</span>`,1.75);
+
+  const restartLevel=level;
+  const useBossCheckpoint=level===10&&hasKey&&(bossIndex>=0||bossCheckpointMode);
+  const resumeBossIndex=bossCheckpointMode?bossCheckpointIndex:Math.max(0,bossIndex);
+
+  setTimeout(()=>{
+    if(!levelTransition)return;
+    if(useBossCheckpoint){
+      initLevel10BossCheckpoint(resumeBossIndex);
+    }else{
+      initLevel(restartLevel);
+    }
+    running=true;
+    last=performance.now();
+    requestAnimationFrame(loop);
+  },1450);
+}
+
+function hitByFood(f){death(`You were hit by <b>${FOOD[f.kind].label}</b>!`,false)}
+
+function collectWord(p){
+  if(p.collected)return;
+
+  if(p.num!==expected){
+    const needed=expected<=10?WORDS[expected][0].toUpperCase():"THE KEY";
+    death(`Wrong number! You collected <b>${p.word.toUpperCase()}</b> instead of <b>${needed}</b>.`,true);
+    return;
+  }
+
+  p.collected=true;
+  expected++;
+  particlesAt(p.x+p.w/2,p.y+p.h/2,20);
+
+  // Every correct pickup explicitly reinforces the Indonesian number.
+  speakIndonesianNumber(p.word);
+
+  if(p.num===7){
+    player.enamTujuhUntil=time+20;
+    enamTujuhBurstAt=0;
+    say(`<b>${p.word.toUpperCase()}!</b><br><span style="font-size:.56em">🙌⚡ ENAM TUJUH! 20 SEC SUPER SPEED + AUTOMATIC 360° DODGEBALL FIRE!</span>`,2);
+  }else if(level===1&&p.num===0){
+    say(`<b>NOL!</b><br><span style="font-size:.55em">GOOD! NEXT IS SATU →</span>`,1.3);
+  }else if(level===1&&p.num===2){
+    say(`<b>DUA!</b><br><span style="font-size:.55em">NOW TRY FLYING HIGHER WITH SPACE.</span>`,1.35);
+  }else if(level===1&&p.num===4){
+    say(`<b>EMPAT!</b><br><span style="font-size:.55em">PRESS F TO THROW A PINK DODGEBALL AT MINI MR LEE.</span>`,1.5);
+  }else{
+    say(`<b>${p.word.toUpperCase()}!</b><br><span style="font-size:.55em">${p.num}</span>`,.8);
+  }
+
+  if(expected===11){
+    if(level===10&&bossCheckpointMode){
+      bossCheckpointMode=false;
+      say(`<b>SEPULUH!</b><br><span style="font-size:.55em">MR LEE IS BACK — FIGHT!</span>`,1.2);
+      setTimeout(()=>{if(running&&!levelTransition)startBossSequence(bossCheckpointIndex)},650);
+    }else{
+      spawnKey();
+    }
+  }
+}
+
+function spawnKey(){
+  keySpawned=true;
+  // The number quiz is finished. Remove wrong-answer cards so they cannot
+  // trigger an invalid "next number" after SEPULUH while the player hunts for the key.
+  decoyPickups=[];
+  const occupied=[
+    ...bonuses.filter(b=>!b.collected),
+    ...(raryPickup&&!raryPickup.collected&&!raryUsed?[raryPickup]:[])
+  ];
+  const spots=safeSpots(80);
+  let placed=null;
+  for(const spot of spots){
+    const candidate={x:spot.x-24,y:spot.y-4,w:48,h:38};
+    if(candidate.x<280||candidate.x>worldWidth-440)continue;
+    if(!overlapsAny(candidate,occupied,45)){placed=candidate;break}
+  }
+  if(!placed)placed={x:worldWidth*.52,y:320,w:48,h:38};
+  keyPickup={...placed,collected:false};
+  say(`🔑 ALL NUMBERS COMPLETE!<br><span style="font-size:.55em">THE KEY HAS APPEARED SOMEWHERE IN THE LEVEL!</span>`,1.9);
+}
+
+function collectKey(){
+  if(!keyPickup||keyPickup.collected)return;
+  keyPickup.collected=true;hasKey=true;particlesAt(keyPickup.x+24,keyPickup.y+18,30,"#ffe55d");
+  if(STAGES[level].boss){say(`🔑 KEY FOUND!<br><span style="font-size:.55em">MR LEE IS BLOCKING THE EXIT!</span>`,1.7);startBossSequence()}
+  else{say(`🔑 KEY FOUND!<br><span style="font-size:.55em">GET TO THE EXIT!</span>`,1.4);exitDoor.open=true}
 }
 
 function collectBonus(b){
@@ -86,59 +177,4 @@ function collectBossPower(p){
 
 function updateBossPowerups(){
   bossPowerups=bossPowerups.filter(p=>!p.collected&&time<p.expiresAt);
-  for(const p of bossPowerups)if(rects(player,p))collectBossPower(p);
-  if(boss&&boss.alive&&time>=bossPowerSpawnAt)spawnBossPowerCluster();
-  // ENAM TUJUH automatic fire is handled globally so normal and boss pickups behave identically.
-}
-
-function startBossSequence(resumeIndex=0){
-  enemies.forEach(e=>e.alive=false);foods=[];
-  if(level===5){
-    bossQueue=[()=>bossTemplate("Medium Mr Lee",50,92,54,1.65,1,10)];
-    bossIndex=-1;
-  }else{
-    bossQueue=[
-      ()=>bossTemplate("Small Mr Lee",10,58,46,1.85,1,5),
-      ()=>bossTemplate("Medium Mr Lee",50,92,58,1.60,1,12),
-      ()=>bossTemplate("Large Mr Lee",100,138,68,1.35,2,20),
-      ()=>bossTemplate("MEGA EVOLUTION MR LEE",200,205,78,1.05,3,28)
-    ];
-    bossIndex=Math.max(0,Math.min(3,resumeIndex))-1;
-  }
-  spawnNextBoss();
-}
-
-function spawnNextBoss(){
-  bossIndex++;
-  if(bossIndex>=bossQueue.length){boss=null;exitDoor.open=true;say(`🏆 MR LEE DEFEATED!<br><span style="font-size:.55em">THE EXIT IS OPEN!</span>`,2);return}
-  boss=bossQueue[bossIndex]();bossPowerups=[];bossPowerSpawnAt=time+.35;
-  const subtitles=level===10?["10 HP — EASY.","50 HP — NOW HE'S ANGRY.","100 HP — HE'S GETTING HUGE.","200 HP — ROBOT MUSCLE MEGA EVOLUTION!"]:["50 HP — MEDIUM MR LEE!"];
-  say(`💪 ${boss.name.toUpperCase()}!<br><span style="font-size:.55em">${subtitles[bossIndex]} POWER-UPS INCOMING!</span>`,2);
-}
-
-function bossHit(dmg){
-  if(!boss||!boss.alive)return;
-  boss.hp-=dmg;boss.flexUntil=time+.45;particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,8,"#ffb64d");
-  if(boss.hp<=0){
-    boss.alive=false;
-    bossBin={x:boss.x,y:GROUND-Math.min(135,boss.h*.55),w:Math.max(62,boss.w*.72),h:Math.min(135,boss.h*.55),until:time+1.1};
-    particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,60,"#ffe45d");
-    say(`🗑️ ${boss.name.toUpperCase()} IS NOW A BIN!`,1.0);
-    setTimeout(()=>{if(running&&!levelTransition)spawnNextBoss()},900);
-  }
-}
-
-function completeLevel(){
-  if(levelTransition||!hasKey||!exitDoor.open)return;
-  levelTransition=true;running=false;
-  if(level<10){say(`✅ LEVEL ${level} COMPLETE!<br><span style="font-size:.55em">${STAGES[level+1].name} IS NEXT.</span>`,1.6);setTimeout(()=>{initLevel(level+1);running=true;last=performance.now();requestAnimationFrame(loop)},1300)}
-  else{
-    overlay.style.display="flex";
-    document.getElementById("card").innerHTML=`<h1>🏆 SPORTS SHED OPEN!</h1><p>You searched all over Marangaroo, collected <b>NOL → SEPULUH</b>, recovered the keys, survived the healthy-food attacks, rode Rary, and defeated the <b>ROBOT MUSCLE MEGA EVOLUTION MR LEE</b>.</p><p>Marangaroo is ready for a week of <b>Indonesian and sport</b>.</p><p><b>Total deaths:</b> ${deaths}</p><button id="againBtn">PLAY AGAIN</button>`;
-    document.getElementById("againBtn").onclick=()=>{overlay.style.display="none";deaths=0;time=0;initLevel(1);running=true;last=performance.now();requestAnimationFrame(loop)};
-  }
-}
-
-function resolvePlatforms(dt){
-  player.onGround=false;const prevBottom=player.y+player.h-player.vy*dt;
-  for(const p of platforms){if(player.x
+  for(const p of bossPowerups)if(rects(player,p
