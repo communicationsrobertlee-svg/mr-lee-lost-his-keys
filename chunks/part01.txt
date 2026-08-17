@@ -3,7 +3,40 @@ const deviceMode=document.getElementById("deviceMode");
 const DEVICE=document.documentElement.dataset.device||"computer";
 if(deviceMode)deviceMode.textContent=DEVICE==="ipad"?"iPad mode — touch controls enabled":DEVICE==="iphone"?"iPhone mode — landscape touch controls":DEVICE==="android"?"Android mode — landscape touch controls":"Computer mode — keyboard controls";
 
-const W=1280,H=720,GROUND=640,GRAV=1850;
+function visibleViewport(){
+  const vv=window.visualViewport;
+  return {w:Math.max(320,Math.round(vv?vv.width:window.innerWidth)),h:Math.max(180,Math.round(vv?vv.height:window.innerHeight))};
+}
+const initialViewport=visibleViewport();
+const H=720;
+const mobileAspect=Math.max(1.25,Math.min(2.35,initialViewport.w/initialViewport.h));
+const W=document.documentElement.dataset.input==="touch"?Math.round(H*mobileAspect):1280;
+canvas.width=W;canvas.height=H;
+const GROUND=640,GRAV=1850;
+
+function fitVisibleScreen(){
+  const {w,h}=visibleViewport();
+  document.documentElement.style.setProperty("--visual-h",h+"px");
+  if(document.documentElement.dataset.input==="touch"){
+    shell.style.width=w+"px";
+    shell.style.height=h+"px";
+  }else{
+    const aspect=W/H;
+    let sw=Math.min(w-16,1280), sh=sw/aspect;
+    if(sh>h-16){sh=h-16;sw=sh*aspect}
+    shell.style.width=Math.max(320,sw)+"px";
+    shell.style.height=Math.max(180,sh)+"px";
+    shell.style.border="4px solid #0c1420";
+    shell.style.borderRadius="14px";
+  }
+}
+fitVisibleScreen();
+window.addEventListener("resize",fitVisibleScreen,{passive:true});
+window.addEventListener("orientationchange",()=>setTimeout(()=>location.reload(),120),{passive:true});
+if(window.visualViewport){
+  visualViewport.addEventListener("resize",fitVisibleScreen,{passive:true});
+  visualViewport.addEventListener("scroll",fitVisibleScreen,{passive:true});
+}
 const WORDS=[["nol",0],["satu",1],["dua",2],["tiga",3],["empat",4],["lima",5],["enam",6],["tujuh",7],["delapan",8],["sembilan",9],["sepuluh",10]];
 const LEVEL_WORDS=["","satu","dua","tiga","empat","lima","enam","tujuh","delapan","sembilan","sepuluh"];
 const STAGES=[
