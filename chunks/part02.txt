@@ -1,4 +1,121 @@
-(stage){
+urn candidates.slice(0,count);
+}
+
+function paddedRect(o,pad=22){
+  return {x:o.x-pad,y:o.y-pad,w:o.w+pad*2,h:o.h+pad*2};
+}
+function overlapsAny(candidate,items,pad=22){
+  const c=paddedRect(candidate,pad);
+  return items.some(item=>rects(c,paddedRect(item,0)));
+}
+function surfaceYForX(x){
+  let best=null,bestDist=Infinity;
+  for(const p of platforms){
+    if(p.w<100)continue;
+    const left=p.x+55,right=p.x+p.w-55;
+    if(x>=left&&x<=right)return {x,y:p.y-48};
+    const cx=clamp(x,left,right),d=Math.abs(cx-x);
+    if(d<bestDist){bestDist=d;best={x:cx,y:p.y-48}}
+  }
+  return best||{x,y:GROUND-48};
+}
+function buildWords(){
+  wordPickups=[];
+  decoyPickups=[];
+
+  const start=330,end=worldWidth-560;
+  const heights=level===1
+    ? [545,535,520,500,475,445,410,370,325,275,225]
+    : [535,410,255,500,335,205,455,285,525,350,230];
+  let slots=[];
+  for(let i=0;i<WORDS.length;i++)slots.push(start+(end-start)*(i/(WORDS.length-1)));
+
+  // Levels 1-7: real number cards are spatially in exact order.
+  // Levels 8-10: the real number cards are spatially mixed.
+  if(level>=8)shuffle(slots);
+
+  for(let i=0;i<WORDS.length;i++){
+    wordPickups.push({
+      x:clamp(slots[i]-52,230,worldWidth-500),
+      y:heights[(i+level*2)%heights.length],
+      w:104,h:40,word:WORDS[i][0],num:WORDS[i][1],collected:false,decoy:false
+    });
+  }
+
+  // ENAM + TUJUH are the combo pair: always directly beside each other.
+  // On Levels 8-10 the pair may move as a unit, but the two cards stay together.
+  const enamCard=wordPickups.find(p=>p.num===6);
+  const tujuhCard=wordPickups.find(p=>p.num===7);
+  if(enamCard&&tujuhCard){
+    const pairX=level<=7?clamp(enamCard.x,300,worldWidth-780):clamp(rand(720,worldWidth-980),320,worldWidth-780);
+    const pairY=[225,315,405,500][(level+1)%4];
+    enamCard.x=pairX;enamCard.y=pairY;
+    tujuhCard.x=pairX+116;tujuhCard.y=pairY;
+  }
+
+  // Wrong-answer decoys: clearly red, with some <= roughly half-card overlap.
+  const decoyCount=[0,1,1,2,2,3,3,4,0,3,5][level];
+  for(let i=0;i<decoyCount;i++){
+    const source=wordPickups[Math.floor(Math.random()*wordPickups.length)];
+    let num=Math.floor(Math.random()*11);
+    if(num===source.num)num=(num+1+Math.floor(Math.random()*9))%11;
+    let candidate=null;
+    for(let tries=0;tries<80;tries++){
+      let x,y;
+      if(Math.random()<.58){
+        const side=Math.random()<.5?-1:1;
+        x=source.x+side*rand(55,96);
+        y=source.y+(Math.random()<.5?-1:1)*rand(22,58);
+      }else{
+        x=rand(300,worldWidth-560);
+        y=[200,260,320,390,455,535][Math.floor(rand(0,6))];
+      }
+      const c={x:clamp(x,220,worldWidth-500),y:clamp(y,185,565),w:104,h:40};
+      if(!decoyPickups.some(d=>rects(paddedRect(c,16),paddedRect(d,0)))){candidate=c;break}
+    }
+    if(!candidate)candidate={x:430+i*145,y:205+(i%4)*82,w:104,h:40};
+    decoyPickups.push({...candidate,word:WORDS[num][0],num,collected:false,decoy:true});
+  }
+}
+
+function buildBonuses(){
+  const occupied=[...wordPickups,...decoyPickups];
+  const candidates=safeSpots(80);
+  const defs=[
+    ["ACHIEVERS","⭐","#7ffcff"],
+    ["RESPONSIBILITY","🎯","#ffae52"],
+    ["RESPECT","🕺","#d98cff"]
+  ];
+  bonuses=[];
+  for(let i=0;i<defs.length;i++){
+    let placed=null;
+    for(const spot of candidates){
+      const candidate={x:spot.x-72,y:spot.y-6,w:144,h:42};
+      if(candidate.x<300||candidate.x>worldWidth-500)continue;
+      if(!overlapsAny(candidate,occupied,34)){
+        placed={...candidate,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
+        break;
+      }
+    }
+    if(!placed){
+      const x=550+i*((worldWidth-1300)/3);
+      placed={x,y:330+(i%2)*100,w:144,h:42,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
+    }
+    bonuses.push(placed);
+    occupied.push(placed);
+  }
+
+  let raryPlaced=null;
+  for(const spot of candidates){
+    const candidate={x:spot.x-62,y:spot.y-10,w:124,h:50};
+    if(candidate.x<500||candidate.x>worldWidth-600)continue;
+    if(!overlapsAny(candidate,occupied,48)){raryPlaced=candidate;break}
+  }
+  if(!raryPlaced)raryPlaced={x:worldWidth*.62,y:320,w:124,h:50};
+  raryPickup={...raryPlaced,collected:false};
+}
+
+function makeEnemies(stage){
   enemies=[];
   const enemyCount=level;
   for(let i=0;i<enemyCount;i++){
@@ -101,95 +218,4 @@ function death(reason,force=true){
   if(!force&&(achOn()||time<player.ignoreHitsUntil))return;
   if(!force&&player.ridingRary){
     player.ridingRary=false;raryUsed=true;player.ignoreHitsUntil=time+1.4;
-    say(`🦁 RARY SAVED YOU!<br><span style="font-size:.55em">RARY runs away. MAX AURA!</span>`,1.6);
-    particlesAt(player.x,player.y,28,"#f5c44d");return;
-  }
-  deaths++;running=false;levelTransition=true;
-  say(`${reason}<br><span style="font-size:.72em">Sampai Jumpa... Mr Lee wins!</span>`,1.75);
-
-  const restartLevel=level;
-  const useBossCheckpoint=level===10&&hasKey&&(bossIndex>=0||bossCheckpointMode);
-  const resumeBossIndex=bossCheckpointMode?bossCheckpointIndex:Math.max(0,bossIndex);
-
-  setTimeout(()=>{
-    if(!levelTransition)return;
-    if(useBossCheckpoint){
-      initLevel10BossCheckpoint(resumeBossIndex);
-    }else{
-      initLevel(restartLevel);
-    }
-    running=true;
-    last=performance.now();
-    requestAnimationFrame(loop);
-  },1450);
-}
-
-function hitByFood(f){death(`You were hit by <b>${FOOD[f.kind].label}</b>!`,false)}
-
-function collectWord(p){
-  if(p.collected)return;
-
-  if(p.num!==expected){
-    const needed=expected<=10?WORDS[expected][0].toUpperCase():"THE KEY";
-    death(`Wrong number! You collected <b>${p.word.toUpperCase()}</b> instead of <b>${needed}</b>.`,true);
-    return;
-  }
-
-  p.collected=true;
-  expected++;
-  particlesAt(p.x+p.w/2,p.y+p.h/2,20);
-
-  // Every correct pickup explicitly reinforces the Indonesian number.
-  speakIndonesianNumber(p.word);
-
-  if(p.num===7){
-    player.enamTujuhUntil=time+20;
-    enamTujuhBurstAt=0;
-    say(`<b>${p.word.toUpperCase()}!</b><br><span style="font-size:.56em">🙌⚡ ENAM TUJUH! 20 SEC SUPER SPEED + AUTOMATIC 360° DODGEBALL FIRE!</span>`,2);
-  }else if(level===1&&p.num===0){
-    say(`<b>NOL!</b><br><span style="font-size:.55em">GOOD! NEXT IS SATU →</span>`,1.3);
-  }else if(level===1&&p.num===2){
-    say(`<b>DUA!</b><br><span style="font-size:.55em">NOW TRY FLYING HIGHER WITH SPACE.</span>`,1.35);
-  }else if(level===1&&p.num===4){
-    say(`<b>EMPAT!</b><br><span style="font-size:.55em">PRESS F TO THROW A PINK DODGEBALL AT MINI MR LEE.</span>`,1.5);
-  }else{
-    say(`<b>${p.word.toUpperCase()}!</b><br><span style="font-size:.55em">${p.num}</span>`,.8);
-  }
-
-  if(expected===11){
-    if(level===10&&bossCheckpointMode){
-      bossCheckpointMode=false;
-      say(`<b>SEPULUH!</b><br><span style="font-size:.55em">MR LEE IS BACK — FIGHT!</span>`,1.2);
-      setTimeout(()=>{if(running&&!levelTransition)startBossSequence(bossCheckpointIndex)},650);
-    }else{
-      spawnKey();
-    }
-  }
-}
-
-function spawnKey(){
-  keySpawned=true;
-  // The number quiz is finished. Remove wrong-answer cards so they cannot
-  // trigger an invalid "next number" after SEPULUH while the player hunts for the key.
-  decoyPickups=[];
-  const occupied=[
-    ...bonuses.filter(b=>!b.collected),
-    ...(raryPickup&&!raryPickup.collected&&!raryUsed?[raryPickup]:[])
-  ];
-  const spots=safeSpots(80);
-  let placed=null;
-  for(const spot of spots){
-    const candidate={x:spot.x-24,y:spot.y-4,w:48,h:38};
-    if(candidate.x<280||candidate.x>worldWidth-440)continue;
-    if(!overlapsAny(candidate,occupied,45)){placed=candidate;break}
-  }
-  if(!placed)placed={x:worldWidth*.52,y:320,w:48,h:38};
-  keyPickup={...placed,collected:false};
-  say(`🔑 ALL NUMBERS COMPLETE!<br><span style="font-size:.55em">THE KEY HAS APPEARED SOMEWHERE IN THE LEVEL!</span>`,1.9);
-}
-
-function collectKey(){
-  if(!keyPickup||keyPickup.collected)return;
-  keyPickup.collected=true;hasKey=true;particlesAt(keyPickup.x+24,keyPickup.y+18,30,"#ffe55d");
-  if(STAGES[level].boss){say(`🔑 KEY FOUND!<br><span style="font-size:.55em">MR LEE IS BLOCKING THE EXIT!</span>`,1.7);startBossSequence()}
-  else{say(`🔑 KEY FOUND!<br><span style="font-size:.55em">GET TO THE EXI
+    say(`🦁 RARY SAVED YOU!<br><spa
