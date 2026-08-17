@@ -1,0 +1,106 @@
++player.w<=p.x||player.x>=p.x+p.w)continue;if(player.vy>=0&&prevBottom<=p.y+8&&player.y+player.h>=p.y){player.y=p.y-player.h;player.vy=0;player.onGround=true}}
+}
+
+function updateEnemies(dt,prevY){
+  const stage=STAGES[level];
+  for(const e of enemies){
+    if(!e.alive)continue;
+    if(e.state==="deadbin"||e.state==="broccoli")continue;
+    if(e.state==="bin"){
+      if(time>=e.stateUntil){e.state="flex";e.stateUntil=time+.9;e.y=GROUND-e.h;e.speechText="Aku kembali!";e.speechUntil=time+1.1;say(`💪 MR LEE IS BACK!`,.5)}
+      else continue;
+    }
+
+    e.speechCooldown-=dt;
+    if(e.speechCooldown<=0){e.speechText=randomMrLeeShout();e.speechUntil=time+1.45;e.speechCooldown=rand(3.0,6.8)}
+
+    if(e.state==="flex"){
+      if(time>=e.stateUntil)e.state="walk";
+    }else{
+      e.x+=e.vx*dt;if(e.x<e.baseX-e.range||e.x>e.baseX+e.range)e.vx*=-1;
+      e.fireCooldown-=dt;e.flexCooldown-=dt;
+      if(e.flexCooldown<=0){e.state="flex";e.stateUntil=time+rand(.55,.9);e.flexCooldown=rand(2.8,5.2)}
+      else if(e.fireCooldown<=0&&Math.abs(e.x-player.x)<820){throwFood(e);e.fireCooldown=stage.fire+rand(0,.55)}
+    }
+
+    if(rects(player,e)){
+      const stomp=player.vy>0&&prevY+player.h<=e.y+18;
+      if(stomp){e.state="broccoli";e.stateUntil=Infinity;player.y=e.y-player.h-3;player.vy=-430;particlesAt(e.x+e.w/2,e.y+e.h/2,28,"#58b957");say(`🥦 STOMP! MR LEE IS NOW BROCCOLI!<br><span style="font-size:.55em">HE IS STAYING LIKE THAT.</span>`,1.15)}
+      else death(`Mr Lee caught you!`,false);
+    }
+  }
+}
+
+function updateBoss(dt,prevY){
+  if(!boss||!boss.alive)return;
+  boss.x+=boss.vx*dt;if(boss.x<boss.baseX-boss.range||boss.x>boss.baseX+boss.range)boss.vx*=-1;
+  boss.fireCooldown-=dt;boss.flexCooldown-=dt;boss.speechCooldown-=dt;
+  if(boss.speechCooldown<=0){boss.speechText=randomMrLeeShout();boss.speechUntil=time+1.5;boss.speechCooldown=rand(2.5,5.6)}
+  if(boss.flexCooldown<=0){boss.flexUntil=time+.72;boss.flexCooldown=rand(2.4,4.4)}
+  if(boss.fireCooldown<=0){const count=boss.shotsPerAttack;for(let i=0;i<count;i++){const spread=(i-(count-1)/2)*.17;throwFood(boss,chooseFood(),spread,boss.foodSpeed)}boss.fireCooldown=boss.fireRate}
+  if(rects(player,boss)){
+    const stomp=player.vy>0&&prevY+player.h<=boss.y+25;
+    if(stomp){player.y=boss.y-player.h-3;player.vy=-520;boss.flexUntil=time+.7;bossHit(10);say(`💪 STOMP! ${boss.name.toUpperCase()} FLEXES!`,.5)}
+    else death(`${boss.name} caught you!`,false);
+  }
+}
+
+function update(dt){
+  time+=dt;if(messageTimer>0){messageTimer-=dt;if(messageTimer<=0)messageEl.style.opacity="0"}
+  const prevY=player.y;let dir=0;if(keys.ArrowLeft||keys.KeyA)dir--;if(keys.ArrowRight||keys.KeyD)dir++;
+  const enamSpeed=handsOn()?1.65:1;
+  const speed=(325+Math.min(level*5,40))*(player.ridingRary?1.28:1)*enamSpeed,accel=(player.ridingRary?3150:2500)*(handsOn()?1.45:1);
+  if(dir){player.vx+=dir*accel*dt;player.facing=dir}else player.vx*=Math.pow(.002,dt);
+  player.vx=clamp(player.vx,-speed,speed);
+  if(keys.Space){player.vy-=2450*dt;player.vy=Math.max(player.vy,-540)}
+  player.vy+=GRAV*dt;player.x+=player.vx*dt;player.x=clamp(player.x,0,worldWidth-player.w);player.y+=player.vy*dt;resolvePlatforms(dt);
+  if(player.y>H+180)death(`You fell off the course!`,true);
+
+  for(const p of wordPickups)if(!p.collected&&rects(player,p))collectWord(p);
+  if(expected<WORDS.length){
+    for(const d of decoyPickups){
+      if(!d.collected&&rects(player,d)){
+        const needed=WORDS[expected]?.[0]||"the next number";
+        death(`Wrong answer! You touched <b>${d.word.toUpperCase()}</b> but need <b>${needed.toUpperCase()}</b>.`,true);
+        break;
+      }
+    }
+  }
+  for(const b of bonuses)if(!b.collected&&rects(player,b))collectBonus(b);
+  if(raryPickup&&!raryPickup.collected&&!raryUsed&&rects(player,raryPickup))collectRary();
+  if(keyPickup&&!keyPickup.collected&&rects(player,keyPickup))collectKey();
+
+  if(handsOn()&&time>=enamTujuhBurstAt){
+    for(let i=0;i<12;i++)shootOne(i*Math.PI*2/12);
+    enamTujuhBurstAt=time+.42;
+  }
+
+  updateEnemies(dt,prevY);updateBoss(dt,prevY);updateBossPowerups();
+
+  for(const s of shots){
+    s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;const sb={x:s.x-s.r,y:s.y-s.r,w:s.r*2,h:s.r*2};
+    if(boss&&boss.alive&&rects(sb,boss)){s.life=0;bossHit(1);continue}
+    for(const e of enemies){if(!e.alive||e.state==="bin"||e.state==="deadbin"||e.state==="broccoli")continue;if(rects(sb,e)){e.state="deadbin";e.stateUntil=Infinity;s.life=0;particlesAt(e.x+e.w/2,e.y+e.h/2,30,"#aeb8c2");say(`🏐 dodgeball! MR LEE IS NOW A BIN!`,.72);break}}
+  }
+  shots=shots.filter(s=>s.life>0&&s.x>-100&&s.x<worldWidth+100&&s.y>-100&&s.y<H+120);
+
+  for(const f of foods){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=260*dt;f.life-=dt;const fb={x:f.x-f.r,y:f.y-f.r,w:f.r*2,h:f.r*2};if(rects(fb,player)){f.life=0;hitByFood(f)}}
+  foods=foods.filter(f=>f.life>0&&f.y<H+130);
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=480*dt;p.life-=dt}
+  particles=particles.filter(p=>p.life>0);
+  if(hasKey&&exitDoor.open&&rects(player,exitDoor))completeLevel();
+  cameraX+=(clamp(player.x-W*.34,0,worldWidth-W)-cameraX)*Math.min(1,dt*6);updateHUD();
+}
+
+function drawSky(){
+  const colors=[null,["#75d6ff","#dff8ff"],["#6ccdf8","#e5fbff"],["#74d2ff","#e8fbff"],["#83d7ff","#fff1c5"],["#67c5ff","#ffe0a7"],["#86c9ff","#f3f9ff"],["#79c8e8","#ddf0ce"],["#6dbfe8","#ffd7a1"],["#5ba7df","#f8d49e"],["#6c7da7","#dbd4c3"]][level];
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,colors[0]);g.addColorStop(1,colors[1]);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+
+function drawTheme(){
+  const theme=STAGES[level].theme;if(theme!=="basketball"&&theme!=="shed"){ctx.fillStyle="#69b956";ctx.fillRect(0,500,W,140)}ctx.save();
+  if(theme==="class"){ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("SPORTS CLASS",460,295);for(let i=0;i<7;i++){ctx.fillStyle=i%2?"#f7c948":"#ef664f";ctx.beginPath();ctx.moveTo(90+i*180,520);ctx.lineTo(110+i*180,470);ctx.lineTo(130+i*180,520);ctx.closePath();ctx.fill()}ctx.fillStyle="#4a77c7";ctx.fillRect(330,550,150,14);ctx.fillStyle="#e65252";ctx.fillRect(760,550,160,14)}
+  else if(theme==="running"){ctx.fillStyle="#c95b45";ctx.fillRect(0,505,W,135);ctx.strokeStyle="#fff";ctx.lineWidth=4;for(let y=522;y<640;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("RUNNING CLUB",500,300)}
+  else if(theme==="netball"){ctx.strokeStyle="#fff";ctx.lineWidth=5;ctx.strokeRect(100,505,1080,120);ctx.beginPath();ctx.arc(640,565,35,0,Math.PI*2);ctx.stroke();for(const x of [170,1110]){ctx.fillStyle="#ddd";ctx.fillRect(x,340,5,170);ctx.strokeStyle="#fff";ctx.beginPath();ctx.arc(x+2,360,34,0,Math.PI*2);ctx.stroke()}ctx.fillStyle="#fff";ctx.font="1000 27px system-ui";ctx.fillText("AFTER SCHOOL NETBALL",405,300)}
+  else if(theme==="basketball"){ctx.fillStyle="#ca7a3e";ctx.fillRect(0,490,W,150);ctx.strokeStyle="#fff";ctx.lineWidth=4;ctx.strokeRect(80,510,1120,115);ctx.beginPath();ctx.arc(640,568,45,0,Math.PI*2);ctx.stroke();for(const x of [145,1130]){ctx.fillStyle="#333";ctx.fillRect(x,340,7,170);ctx.strokeStyle="#fff";ctx.strokeRect(x-38,350,80,52)}ctx.fillStyle="#fff";ctx.font="1000 27px system-ui";ctx.fillText("AFTER SCHOOL BASKETBALL",380,300)}
+  else if(theme==="multi"){ctx.fillStyle="#fff";ctx.font="1000 26px system-ui";ctx.fillText("MULTICULTURAL NETBALL CARNIVAL",325,285);const cs=["#e53935","#f5cf3b","#2fae55","#2d72d2","#8e4bc6"];for(let i=0;i<7;i++){const x=60+i*180;ctx.fillStyle=cs[i%cs.length];ctx.beg
