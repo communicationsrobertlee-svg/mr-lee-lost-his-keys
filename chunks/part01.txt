@@ -1,0 +1,190 @@
+h.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function roundRect(c,x,y,w,h,r,fill=true,stroke=false){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();if(fill)c.fill();if(stroke)c.stroke()}
+function active(t){return time<t}
+function achOn(){return active(player.invulnUntil)}
+function respOn(){return active(player.responsibilityUntil)}
+function danceOn(){return active(player.danceUntil)}
+function handsOn(){return active(player.enamTujuhUntil)}
+function say(text,secs=1.2){messageEl.innerHTML=text;messageEl.style.opacity="1";messageTimer=secs}
+
+function speakIndonesianNumber(word){
+  try{
+    if(!("speechSynthesis" in window))return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(word);
+    u.lang="id-ID";
+    u.rate=.88;
+    u.pitch=1.0;
+    const voices=window.speechSynthesis.getVoices();
+    const idVoice=voices.find(v=>/^id([-_]|$)/i.test(v.lang));
+    if(idVoice)u.voice=idVoice;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function updateHUD(){
+  levelPill.textContent=`LEVEL ${level} — ${LEVEL_WORDS[level].toUpperCase()}`;
+  stagePill.textContent=STAGES[level].name;
+  nextPill.textContent=expected<=10?`NEXT: ${WORDS[expected][0].toUpperCase()} (${expected})`:"NUMBERS COMPLETE";
+  keyPill.textContent=bossCheckpointMode?"⚔️ BOSS CHECKPOINT: SEPULUH":!keySpawned?"🔑 KEY: LOCKED":hasKey?"🔑 KEY: FOUND":"🔑 KEY: FIND IT!";
+  ballPill.textContent="💗 PINK dodgeballs: READY";
+  raryPill.style.display=player.ridingRary?"":"none";
+  const buffs=[];
+  if(handsOn())buffs.push(`🙌 ENAM TUJUH ${Math.ceil(player.enamTujuhUntil-time)}s`);
+  if(achOn())buffs.push(`⭐ ACHIEVERS ${Math.ceil(player.invulnUntil-time)}s`);
+  if(respOn())buffs.push(`🎯 RESPONSIBILITY ${Math.ceil(player.responsibilityUntil-time)}s`);
+  if(danceOn())buffs.push(`🕺 RESPECT ${Math.ceil(player.danceUntil-time)}s`);
+  powerPill.style.display=buffs.length?"":"none";powerPill.textContent=buffs.join(" • ");
+  if(boss&&boss.alive){bossPill.style.display="";bossPill.textContent=`💪 ${boss.name.toUpperCase()} ${Math.max(0,boss.hp)}/${boss.maxHp} HP`}
+  else bossPill.style.display="none";
+}
+
+function makePlatforms(stage){
+  platforms=[];
+  if(stage.gaps===0)platforms.push({x:0,y:GROUND,w:worldWidth,h:100,kind:"ground"});
+  else{
+    let cursor=0;const usable=worldWidth-1500,spacing=usable/stage.gaps;
+    for(let i=0;i<stage.gaps;i++){
+      const gx=850+i*spacing+(i%2)*80,gw=70+level*9+(i%3)*16;
+      if(gx>cursor)platforms.push({x:cursor,y:GROUND,w:gx-cursor,h:100,kind:"ground"});
+      cursor=gx+gw;
+    }
+    platforms.push({x:cursor,y:GROUND,w:worldWidth-cursor,h:100,kind:"ground"});
+  }
+  const raised=level===1?3:4+level;
+  for(let i=0;i<raised;i++){
+    const x=430+i*(worldWidth-1100)/raised+(i%2)*38;
+    const y=[520,455,390,500][i%4]-(level>6&&i%3===0?35:0);
+    platforms.push({x,y,w:150+(i%3)*36,h:22,kind:"platform"});
+  }
+}
+
+function safeSpots(count){
+  const candidates=[];
+  for(const p of platforms){
+    if(p.w<120)continue;
+    const margin=45,usable=Math.max(1,p.w-margin*2),n=Math.max(1,Math.floor(usable/180));
+    for(let i=0;i<n;i++){
+      const x=p.x+margin+(i+.5)*usable/n;
+      if(x<220||x>worldWidth-430)continue;
+      candidates.push({x,y:p.y-48});
+    }
+  }
+  shuffle(candidates);return candidates.slice(0,count);
+}
+
+function paddedRect(o,pad=22){
+  return {x:o.x-pad,y:o.y-pad,w:o.w+pad*2,h:o.h+pad*2};
+}
+function overlapsAny(candidate,items,pad=22){
+  const c=paddedRect(candidate,pad);
+  return items.some(item=>rects(c,paddedRect(item,0)));
+}
+function surfaceYForX(x){
+  let best=null,bestDist=Infinity;
+  for(const p of platforms){
+    if(p.w<100)continue;
+    const left=p.x+55,right=p.x+p.w-55;
+    if(x>=left&&x<=right)return {x,y:p.y-48};
+    const cx=clamp(x,left,right),d=Math.abs(cx-x);
+    if(d<bestDist){bestDist=d;best={x:cx,y:p.y-48}}
+  }
+  return best||{x,y:GROUND-48};
+}
+function buildWords(){
+  wordPickups=[];
+  decoyPickups=[];
+
+  const start=330,end=worldWidth-560;
+  const heights=level===1
+    ? [545,535,520,500,475,445,410,370,325,275,225]
+    : [535,410,255,500,335,205,455,285,525,350,230];
+  let slots=[];
+  for(let i=0;i<WORDS.length;i++)slots.push(start+(end-start)*(i/(WORDS.length-1)));
+
+  // Levels 1-7: real number cards are spatially in exact order.
+  // Levels 8-10: the real number cards are spatially mixed.
+  if(level>=8)shuffle(slots);
+
+  for(let i=0;i<WORDS.length;i++){
+    wordPickups.push({
+      x:clamp(slots[i]-52,230,worldWidth-500),
+      y:heights[(i+level*2)%heights.length],
+      w:104,h:40,word:WORDS[i][0],num:WORDS[i][1],collected:false,decoy:false
+    });
+  }
+
+  // ENAM + TUJUH are the combo pair: always directly beside each other.
+  // On Levels 8-10 the pair may move as a unit, but the two cards stay together.
+  const enamCard=wordPickups.find(p=>p.num===6);
+  const tujuhCard=wordPickups.find(p=>p.num===7);
+  if(enamCard&&tujuhCard){
+    const pairX=level<=7?clamp(enamCard.x,300,worldWidth-780):clamp(rand(720,worldWidth-980),320,worldWidth-780);
+    const pairY=[225,315,405,500][(level+1)%4];
+    enamCard.x=pairX;enamCard.y=pairY;
+    tujuhCard.x=pairX+116;tujuhCard.y=pairY;
+  }
+
+  // Wrong-answer decoys: clearly red, with some <= roughly half-card overlap.
+  const decoyCount=[0,1,1,2,2,3,3,4,0,3,5][level];
+  for(let i=0;i<decoyCount;i++){
+    const source=wordPickups[Math.floor(Math.random()*wordPickups.length)];
+    let num=Math.floor(Math.random()*11);
+    if(num===source.num)num=(num+1+Math.floor(Math.random()*9))%11;
+    let candidate=null;
+    for(let tries=0;tries<80;tries++){
+      let x,y;
+      if(Math.random()<.58){
+        const side=Math.random()<.5?-1:1;
+        x=source.x+side*rand(55,96);
+        y=source.y+(Math.random()<.5?-1:1)*rand(22,58);
+      }else{
+        x=rand(300,worldWidth-560);
+        y=[200,260,320,390,455,535][Math.floor(rand(0,6))];
+      }
+      const c={x:clamp(x,220,worldWidth-500),y:clamp(y,185,565),w:104,h:40};
+      if(!decoyPickups.some(d=>rects(paddedRect(c,16),paddedRect(d,0)))){candidate=c;break}
+    }
+    if(!candidate)candidate={x:430+i*145,y:205+(i%4)*82,w:104,h:40};
+    decoyPickups.push({...candidate,word:WORDS[num][0],num,collected:false,decoy:true});
+  }
+}
+
+function buildBonuses(){
+  const occupied=[...wordPickups,...decoyPickups];
+  const candidates=safeSpots(80);
+  const defs=[
+    ["ACHIEVERS","⭐","#7ffcff"],
+    ["RESPONSIBILITY","🎯","#ffae52"],
+    ["RESPECT","🕺","#d98cff"]
+  ];
+  bonuses=[];
+  for(let i=0;i<defs.length;i++){
+    let placed=null;
+    for(const spot of candidates){
+      const candidate={x:spot.x-72,y:spot.y-6,w:144,h:42};
+      if(candidate.x<300||candidate.x>worldWidth-500)continue;
+      if(!overlapsAny(candidate,occupied,34)){
+        placed={...candidate,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
+        break;
+      }
+    }
+    if(!placed){
+      const x=550+i*((worldWidth-1300)/3);
+      placed={x,y:330+(i%2)*100,w:144,h:42,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
+    }
+    bonuses.push(placed);
+    occupied.push(placed);
+  }
+
+  let raryPlaced=null;
+  for(const spot of candidates){
+    const candidate={x:spot.x-62,y:spot.y-10,w:124,h:50};
+    if(candidate.x<500||candidate.x>worldWidth-600)continue;
+    if(!overlapsAny(candidate,occupied,48)){raryPlaced=candidate;break}
+  }
+  if(!raryPlaced)raryPlaced={x:worldWidth*.62,y:320,w:124,h:50};
+  raryPickup={...raryPlaced,collected:false};
+}
+
+function makeEnemies
