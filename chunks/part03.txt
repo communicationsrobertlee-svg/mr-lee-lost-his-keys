@@ -1,0 +1,144 @@
+T!</span>`,1.4);exitDoor.open=true}
+}
+
+function collectBonus(b){
+  if(b.collected)return;b.collected=true;particlesAt(b.x+b.w/2,b.y+b.h/2,26,b.color);
+  if(b.name==="ACHIEVERS"){player.invulnUntil=time+15;say(`⭐ ACHIEVERS!<br><span style="font-size:.5em">YOU IMPROVED IN CLASS — 15 SECONDS INVULNERABILITY!</span>`,1.8)}
+  else if(b.name==="RESPONSIBILITY"){player.responsibilityUntil=time+20;say(`🎯 RESPONSIBILITY!<br><span style="font-size:.5em">YOU HELPED PACK AWAY THE SPORTS EQUIPMENT — MULTI-DIRECTION SHOOTING!</span>`,1.8)}
+  else{player.danceUntil=time+10;say(`🕺 RESPECT!<br><span style="font-size:.5em">YOU USED YOUR MANNERS — DANCE MODE!</span>`,1.8)}
+}
+
+function collectRary(){
+  if(raryPickup.collected||raryUsed)return;
+  raryPickup.collected=true;
+  player.ridingRary=true;
+  player.ignoreHitsUntil=time+2.2;
+  raryCelebrationUntil=time+3.2;
+  particlesAt(player.x+20,player.y+20,70,"#ffd84d");
+  particlesAt(player.x+20,player.y+20,55,"#fff2a1");
+  say(`🦁⚡ RARY! RARY! ⚡🦁<br><span style="font-size:.72em">RARY THE LION IS MAX AURA!</span><br><span style="font-size:.48em">EXTRA HIT • FASTER MOVEMENT • YOU ARE AWESOME</span>`,3.2);
+}
+
+function shootOne(angle){
+  const speed=760;
+  shots.push({
+    x:player.x+player.w/2,
+    y:player.y+player.h/2,
+    vx:Math.cos(angle)*speed,
+    vy:Math.sin(angle)*speed,
+    r:10,
+    damage:1,
+    life:1.8
+  });
+}
+
+function shoot(){
+  const base=player.facing>0?0:Math.PI;
+  if(respOn()){
+    [-.55,-.27,0,.27,.55].forEach(a=>shootOne(base+(player.facing>0?a:-a)));
+  }else{
+    shootOne(base);
+  }
+}
+
+function chooseFood(){const foods=["broccoli","carrot","apple","banana","peas"];return foods[Math.floor(Math.random()*foods.length)]}
+function throwFood(source,kind=null,spread=0,speedBonus=0){
+  kind=kind||chooseFood();const sx=source.x+source.w/2,sy=source.y+20,tx=player.x+player.w/2,ty=player.y+player.h/2;
+  const angle=Math.atan2(ty-sy,tx-sx)+spread,speed=170+level*12+speedBonus;
+  foods.push({x:sx,y:sy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-20,r:FOOD[kind].r,kind,life:5});
+}
+
+const MR_LEE_SHOUTS=["Halo!","Apa kabar?","Selamat pagi!","Selamat siang!","Selamat sore!","Terima kasih!","Sampai jumpa!","Nol!","Satu!","Dua!","Tiga!","Empat!","Lima!","Enam!","Tujuh!","Delapan!","Sembilan!","Sepuluh!","ENAM TUJUH!"];
+function randomMrLeeShout(){return MR_LEE_SHOUTS[Math.floor(Math.random()*MR_LEE_SHOUTS.length)]}
+function bossTemplate(name,hp,size,speed,fire,shotsPerAttack,foodSpeed){return{name,hp,maxHp:hp,w:size,h:size*1.18,x:worldWidth-690,y:GROUND-size*1.18,alive:true,vx:speed,baseX:worldWidth-690,range:300,fireCooldown:.8,fireRate:fire,flexCooldown:rand(2.2,4.1),flexUntil:0,speechCooldown:rand(2.4,5.2),speechText:"",speechUntil:0,shotsPerAttack,foodSpeed}}
+function spawnBossPowerCluster(){
+  if(!boss||!boss.alive)return;
+  const arenaStart=worldWidth-1300,arenaEnd=worldWidth-320;
+  const ys=[190,275,355,445,525];
+  const types=["ENAMTUJUH","RARY","ACHIEVERS","RESPONSIBILITY","RESPECT"];
+  const copies=(level===10&&bossIndex>=2)?2:1;
+  for(const type of types){
+    for(let c=0;c<copies;c++){
+      bossPowerups.push({type,x:rand(arenaStart,arenaEnd),y:ys[Math.floor(rand(0,ys.length))],w:type==="ENAMTUJUH"?168:148,h:44,collected:false,expiresAt:time+24+rand(0,6)});
+    }
+  }
+  bossPowerSpawnAt=time+(level===10&&bossIndex>=2?5.5:7.0);
+}
+
+function collectBossPower(p){
+  if(p.collected)return;
+  p.collected=true;
+  particlesAt(p.x+p.w/2,p.y+p.h/2,34,p.type==="RARY"?"#ffd84d":"#fff06a");
+  if(p.type==="ENAMTUJUH"){
+    player.enamTujuhUntil=time+20;player.bossPowerUntil=time+20;enamTujuhBurstAt=0;autoBurstAt=0;
+    say(`🙌⚡ ENAM TUJUH! ⚡🙌<br><span style="font-size:.52em">20 SECONDS: SUPER SPEED + AUTOMATIC 360° dodgeball FIRE!</span>`,2);
+  }else if(p.type==="RARY"){
+    player.ridingRary=true;raryUsed=false;player.ignoreHitsUntil=time+1.5;raryCelebrationUntil=time+2.4;
+    say(`🦁 RARY RETURNS!<br><span style="font-size:.58em">MAX AURA — EXTRA HIT!</span>`,1.6);
+  }else if(p.type==="ACHIEVERS"){
+    player.invulnUntil=Math.max(player.invulnUntil,time+15);say(`⭐ ACHIEVERS — INVULNERABLE!`,1.0);
+  }else if(p.type==="RESPONSIBILITY"){
+    player.responsibilityUntil=Math.max(player.responsibilityUntil,time+20);say(`🎯 RESPONSIBILITY — MULTI-SHOT!`,1.0);
+  }else{
+    player.danceUntil=Math.max(player.danceUntil,time+10);say(`🕺 RESPECT — DANCE MODE!`,1.0);
+  }
+}
+
+function updateBossPowerups(){
+  bossPowerups=bossPowerups.filter(p=>!p.collected&&time<p.expiresAt);
+  for(const p of bossPowerups)if(rects(player,p))collectBossPower(p);
+  if(boss&&boss.alive&&time>=bossPowerSpawnAt)spawnBossPowerCluster();
+  // ENAM TUJUH automatic fire is handled globally so normal and boss pickups behave identically.
+}
+
+function startBossSequence(resumeIndex=0){
+  enemies.forEach(e=>e.alive=false);foods=[];
+  if(level===5){
+    bossQueue=[()=>bossTemplate("Medium Mr Lee",50,92,54,1.65,1,10)];
+    bossIndex=-1;
+  }else{
+    bossQueue=[
+      ()=>bossTemplate("Small Mr Lee",10,58,46,1.85,1,5),
+      ()=>bossTemplate("Medium Mr Lee",50,92,58,1.60,1,12),
+      ()=>bossTemplate("Large Mr Lee",100,138,68,1.35,2,20),
+      ()=>bossTemplate("MEGA EVOLUTION MR LEE",200,205,78,1.05,3,28)
+    ];
+    bossIndex=Math.max(0,Math.min(3,resumeIndex))-1;
+  }
+  spawnNextBoss();
+}
+
+function spawnNextBoss(){
+  bossIndex++;
+  if(bossIndex>=bossQueue.length){boss=null;exitDoor.open=true;say(`🏆 MR LEE DEFEATED!<br><span style="font-size:.55em">THE EXIT IS OPEN!</span>`,2);return}
+  boss=bossQueue[bossIndex]();bossPowerups=[];bossPowerSpawnAt=time+.35;
+  const subtitles=level===10?["10 HP — EASY.","50 HP — NOW HE'S ANGRY.","100 HP — HE'S GETTING HUGE.","200 HP — ROBOT MUSCLE MEGA EVOLUTION!"]:["50 HP — MEDIUM MR LEE!"];
+  say(`💪 ${boss.name.toUpperCase()}!<br><span style="font-size:.55em">${subtitles[bossIndex]} POWER-UPS INCOMING!</span>`,2);
+}
+
+function bossHit(dmg){
+  if(!boss||!boss.alive)return;
+  boss.hp-=dmg;boss.flexUntil=time+.45;particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,8,"#ffb64d");
+  if(boss.hp<=0){
+    boss.alive=false;
+    bossBin={x:boss.x,y:GROUND-Math.min(135,boss.h*.55),w:Math.max(62,boss.w*.72),h:Math.min(135,boss.h*.55),until:time+1.1};
+    particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,60,"#ffe45d");
+    say(`🗑️ ${boss.name.toUpperCase()} IS NOW A BIN!`,1.0);
+    setTimeout(()=>{if(running&&!levelTransition)spawnNextBoss()},900);
+  }
+}
+
+function completeLevel(){
+  if(levelTransition||!hasKey||!exitDoor.open)return;
+  levelTransition=true;running=false;
+  if(level<10){say(`✅ LEVEL ${level} COMPLETE!<br><span style="font-size:.55em">${STAGES[level+1].name} IS NEXT.</span>`,1.6);setTimeout(()=>{initLevel(level+1);running=true;last=performance.now();requestAnimationFrame(loop)},1300)}
+  else{
+    overlay.style.display="flex";
+    document.getElementById("card").innerHTML=`<h1>🏆 SPORTS SHED OPEN!</h1><p>You searched all over Marangaroo, collected <b>NOL → SEPULUH</b>, recovered the keys, survived the healthy-food attacks, rode Rary, and defeated the <b>ROBOT MUSCLE MEGA EVOLUTION MR LEE</b>.</p><p>Marangaroo is ready for a week of <b>Indonesian and sport</b>.</p><p><b>Total deaths:</b> ${deaths}</p><button id="againBtn">PLAY AGAIN</button>`;
+    document.getElementById("againBtn").onclick=()=>{overlay.style.display="none";deaths=0;time=0;initLevel(1);running=true;last=performance.now();requestAnimationFrame(loop)};
+  }
+}
+
+function resolvePlatforms(dt){
+  player.onGround=false;const prevBottom=player.y+player.h-player.vy*dt;
+  for(const p of platforms){if(player.x
