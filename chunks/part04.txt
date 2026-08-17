@@ -1,4 +1,59 @@
-+player.w<=p.x||player.x>=p.x+p.w)continue;if(player.vy>=0&&prevBottom<=p.y+8&&player.y+player.h>=p.y){player.y=p.y-player.h;player.vy=0;player.onGround=true}}
+))collectBossPower(p);
+  if(boss&&boss.alive&&time>=bossPowerSpawnAt)spawnBossPowerCluster();
+  // ENAM TUJUH automatic fire is handled globally so normal and boss pickups behave identically.
+}
+
+function startBossSequence(resumeIndex=0){
+  enemies.forEach(e=>e.alive=false);foods=[];
+  if(level===5){
+    bossQueue=[()=>bossTemplate("Medium Mr Lee",50,92,54,1.65,1,10)];
+    bossIndex=-1;
+  }else{
+    bossQueue=[
+      ()=>bossTemplate("Small Mr Lee",10,58,46,1.85,1,5),
+      ()=>bossTemplate("Medium Mr Lee",50,92,58,1.60,1,12),
+      ()=>bossTemplate("Large Mr Lee",100,138,68,1.35,2,20),
+      ()=>bossTemplate("MEGA EVOLUTION MR LEE",200,205,78,1.05,3,28)
+    ];
+    bossIndex=Math.max(0,Math.min(3,resumeIndex))-1;
+  }
+  spawnNextBoss();
+}
+
+function spawnNextBoss(){
+  bossIndex++;
+  if(bossIndex>=bossQueue.length){boss=null;exitDoor.open=true;say(`🏆 MR LEE DEFEATED!<br><span style="font-size:.55em">THE EXIT IS OPEN!</span>`,2);return}
+  boss=bossQueue[bossIndex]();bossPowerups=[];bossPowerSpawnAt=time+.35;
+  const subtitles=level===10?["10 HP — EASY.","50 HP — NOW HE'S ANGRY.","100 HP — HE'S GETTING HUGE.","200 HP — ROBOT MUSCLE MEGA EVOLUTION!"]:["50 HP — MEDIUM MR LEE!"];
+  say(`💪 ${boss.name.toUpperCase()}!<br><span style="font-size:.55em">${subtitles[bossIndex]} POWER-UPS INCOMING!</span>`,2);
+}
+
+function bossHit(dmg){
+  if(!boss||!boss.alive)return;
+  boss.hp-=dmg;boss.flexUntil=time+.45;particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,8,"#ffb64d");
+  if(boss.hp<=0){
+    boss.alive=false;
+    bossBin={x:boss.x,y:GROUND-Math.min(135,boss.h*.55),w:Math.max(62,boss.w*.72),h:Math.min(135,boss.h*.55),until:time+1.1};
+    particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,60,"#ffe45d");
+    say(`🗑️ ${boss.name.toUpperCase()} IS NOW A BIN!`,1.0);
+    setTimeout(()=>{if(running&&!levelTransition)spawnNextBoss()},900);
+  }
+}
+
+function completeLevel(){
+  if(levelTransition||!hasKey||!exitDoor.open)return;
+  levelTransition=true;running=false;
+  if(level<10){say(`✅ LEVEL ${level} COMPLETE!<br><span style="font-size:.55em">${STAGES[level+1].name} IS NEXT.</span>`,1.6);setTimeout(()=>{initLevel(level+1);running=true;last=performance.now();requestAnimationFrame(loop)},1300)}
+  else{
+    overlay.style.display="flex";
+    document.getElementById("card").innerHTML=`<h1>🏆 SPORTS SHED OPEN!</h1><p>You searched all over Marangaroo, collected <b>NOL → SEPULUH</b>, recovered the keys, survived the healthy-food attacks, rode Rary, and defeated the <b>ROBOT MUSCLE MEGA EVOLUTION MR LEE</b>.</p><p>Marangaroo is ready for a week of <b>Indonesian and sport</b>.</p><p><b>Total deaths:</b> ${deaths}</p><button id="againBtn">PLAY AGAIN</button>`;
+    document.getElementById("againBtn").onclick=()=>{overlay.style.display="none";deaths=0;time=0;initLevel(1);running=true;last=performance.now();requestAnimationFrame(loop)};
+  }
+}
+
+function resolvePlatforms(dt){
+  player.onGround=false;const prevBottom=player.y+player.h-player.vy*dt;
+  for(const p of platforms){if(player.x+player.w<=p.x||player.x>=p.x+p.w)continue;if(player.vy>=0&&prevBottom<=p.y+8&&player.y+player.h>=p.y){player.y=p.y-player.h;player.vy=0;player.onGround=true}}
 }
 
 function updateEnemies(dt,prevY){
@@ -92,15 +147,4 @@ function update(dt){
   cameraX+=(clamp(player.x-W*.34,0,worldWidth-W)-cameraX)*Math.min(1,dt*6);updateHUD();
 }
 
-function drawSky(){
-  const colors=[null,["#75d6ff","#dff8ff"],["#6ccdf8","#e5fbff"],["#74d2ff","#e8fbff"],["#83d7ff","#fff1c5"],["#67c5ff","#ffe0a7"],["#86c9ff","#f3f9ff"],["#79c8e8","#ddf0ce"],["#6dbfe8","#ffd7a1"],["#5ba7df","#f8d49e"],["#6c7da7","#dbd4c3"]][level];
-  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,colors[0]);g.addColorStop(1,colors[1]);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-}
-
-function drawTheme(){
-  const theme=STAGES[level].theme;if(theme!=="basketball"&&theme!=="shed"){ctx.fillStyle="#69b956";ctx.fillRect(0,500,W,140)}ctx.save();
-  if(theme==="class"){ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("SPORTS CLASS",460,295);for(let i=0;i<7;i++){ctx.fillStyle=i%2?"#f7c948":"#ef664f";ctx.beginPath();ctx.moveTo(90+i*180,520);ctx.lineTo(110+i*180,470);ctx.lineTo(130+i*180,520);ctx.closePath();ctx.fill()}ctx.fillStyle="#4a77c7";ctx.fillRect(330,550,150,14);ctx.fillStyle="#e65252";ctx.fillRect(760,550,160,14)}
-  else if(theme==="running"){ctx.fillStyle="#c95b45";ctx.fillRect(0,505,W,135);ctx.strokeStyle="#fff";ctx.lineWidth=4;for(let y=522;y<640;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("RUNNING CLUB",500,300)}
-  else if(theme==="netball"){ctx.strokeStyle="#fff";ctx.lineWidth=5;ctx.strokeRect(100,505,1080,120);ctx.beginPath();ctx.arc(640,565,35,0,Math.PI*2);ctx.stroke();for(const x of [170,1110]){ctx.fillStyle="#ddd";ctx.fillRect(x,340,5,170);ctx.strokeStyle="#fff";ctx.beginPath();ctx.arc(x+2,360,34,0,Math.PI*2);ctx.stroke()}ctx.fillStyle="#fff";ctx.font="1000 27px system-ui";ctx.fillText("AFTER SCHOOL NETBALL",405,300)}
-  else if(theme==="basketball"){ctx.fillStyle="#ca7a3e";ctx.fillRect(0,490,W,150);ctx.strokeStyle="#fff";ctx.lineWidth=4;ctx.strokeRect(80,510,1120,115);ctx.beginPath();ctx.arc(640,568,45,0,Math.PI*2);ctx.stroke();for(const x of [145,1130]){ctx.fillStyle="#333";ctx.fillRect(x,340,7,170);ctx.strokeStyle="#fff";ctx.strokeRect(x-38,350,80,52)}ctx.fillStyle="#fff";ctx.font="1000 27px system-ui";ctx.fillText("AFTER SCHOOL BASKETBALL",380,300)}
-  else if(theme==="multi"){ctx.fillStyle="#fff";ctx.font="1000 26px system-ui";ctx.fillText("MULTICULTURAL NETBALL CARNIVAL",325,285);const cs=["#e53935","#f5cf3b","#2fae55","#2d72d2","#8e4bc6"];for(let i=0;i<7;i++){const x=60+i*180;ctx.fillStyle=cs[i%cs.length];ctx.beg
+func
