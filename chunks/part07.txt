@@ -1,4 +1,32 @@
-nceOn()){ctx.translate(x+19,y+28);ctx.rotate(Math.sin(time*12)*.28);ctx.translate(-(x+19),-(y+28));ctx.fillStyle="#fff";ctx.font="1000 22px system-ui";ctx.fillText("♪",x-15,y);ctx.fillText("♫",x+43,y+2)}
+ext(boss.name.toUpperCase(),x+boss.w/2,y-13);
+  ctx.restore();
+
+  if(time<boss.speechUntil)drawSpeechBubble(x+boss.w/2,y,boss.speechText,mega?280:220);
+}
+
+function drawRary(){
+  if(!player.ridingRary)return;
+  const x=player.x-cameraX,y=player.y+34;
+  ctx.save();
+  ctx.shadowColor="#ffd84d";
+  ctx.shadowBlur=30;
+  ctx.fillStyle="rgba(255,216,77,.35)";
+  ctx.beginPath();
+  ctx.ellipse(x+20,y+28,74+Math.sin(time*8)*5,45+Math.sin(time*8)*3,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#d29a2e";ctx.beginPath();ctx.ellipse(x+18,y+30,50,24,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#8b5b1d";ctx.beginPath();ctx.arc(x-12,y+18,26,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#e4b742";ctx.beginPath();ctx.arc(x-12,y+18,16,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#111";ctx.beginPath();ctx.arc(x-17,y+14,3,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#8b5b1d";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+52,y+28);ctx.quadraticCurveTo(x+76,y+6,x+84,y+29);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="1000 12px system-ui";ctx.textAlign="center";ctx.fillText("MAX AURA",x+18,y+69);
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const x=player.x-cameraX,y=player.y;drawRary();ctx.save();
+  if(danceOn()){ctx.translate(x+19,y+28);ctx.rotate(Math.sin(time*12)*.28);ctx.translate(-(x+19),-(y+28));ctx.fillStyle="#fff";ctx.font="1000 22px system-ui";ctx.fillText("♪",x-15,y);ctx.fillText("♫",x+43,y+2)}
   if(achOn()){ctx.strokeStyle="#7ffcff";ctx.lineWidth=5;ctx.beginPath();ctx.arc(x+19,y+27,39+Math.sin(time*9)*3,0,Math.PI*2);ctx.stroke()}
   ctx.fillStyle="#6c7480";ctx.fillRect(x-8,y+24,9,27);if(keys.Space){ctx.fillStyle="#ffb126";ctx.beginPath();ctx.moveTo(x-6,y+50);ctx.lineTo(x-1,y+70+Math.sin(time*30)*4);ctx.lineTo(x+2,y+50);ctx.fill()}
   ctx.fillStyle="#173a67";ctx.fillRect(x+5,y,28,13);ctx.fillStyle="#f2c6a3";ctx.fillRect(x+8,y+12,23,17);ctx.fillStyle="#202733";ctx.fillRect(x+(player.facing>0?25:9),y+17,4,4);ctx.fillStyle="#173a67";ctx.fillRect(x+6,y+29,27,18);ctx.fillStyle="#ffd83d";ctx.fillRect(x+13,y+32,5,5);ctx.fillRect(x+22,y+32,5,5);ctx.fillRect(x+6,y+38,5,9);ctx.fillRect(x+28,y+38,5,9);ctx.fillStyle="#2f394a";ctx.fillRect(x+6,y+47,10,7);ctx.fillRect(x+23,y+47,10,7);
@@ -105,8 +133,23 @@ function release(code){
 
 window.addEventListener("keydown",e=>{if(["Space","ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.code))e.preventDefault();if(e.repeat&&e.code==="KeyF")return;if(e.code==="KeyR"){initLevel(level);if(!running){running=true;last=performance.now();requestAnimationFrame(loop)}return}press(e.code)},{passive:false});
 window.addEventListener("keyup",e=>release(e.code));
-document.querySelectorAll(".touchBtn").forEach(btn=>{const code=btn.dataset.key;const down=e=>{e.preventDefault();press(code)},up=e=>{e.preventDefault();release(code)};btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("pointerleave",e=>{if(e.buttons===0)up(e)})});
+document.querySelectorAll(".touchBtn").forEach(btn=>{
+  const code=btn.dataset.key;
+  const down=e=>{e.preventDefault();try{btn.setPointerCapture(e.pointerId)}catch(_){}btn.classList.add("held");press(code)};
+  const up=e=>{e.preventDefault();btn.classList.remove("held");release(code)};
+  btn.addEventListener("pointerdown",down,{passive:false});
+  btn.addEventListener("pointerup",up,{passive:false});
+  btn.addEventListener("pointercancel",up,{passive:false});
+  btn.addEventListener("lostpointercapture",()=>{btn.classList.remove("held");release(code)});
+});
+window.addEventListener("contextmenu",e=>e.preventDefault());
+window.addEventListener("touchmove",e=>{if(document.documentElement.dataset.input==="touch")e.preventDefault()},{passive:false});
 startBtn.onclick=()=>{
+  unlockGameAudio();
+  if(document.documentElement.dataset.input==="touch"){
+    const el=document.documentElement;
+    try{if(el.requestFullscreen)el.requestFullscreen().catch(()=>{})}catch(e){}
+  }
   overlay.style.display="none";
   initLevel(1);
   running=true;
