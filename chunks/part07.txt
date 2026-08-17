@@ -1,0 +1,124 @@
+nceOn()){ctx.translate(x+19,y+28);ctx.rotate(Math.sin(time*12)*.28);ctx.translate(-(x+19),-(y+28));ctx.fillStyle="#fff";ctx.font="1000 22px system-ui";ctx.fillText("♪",x-15,y);ctx.fillText("♫",x+43,y+2)}
+  if(achOn()){ctx.strokeStyle="#7ffcff";ctx.lineWidth=5;ctx.beginPath();ctx.arc(x+19,y+27,39+Math.sin(time*9)*3,0,Math.PI*2);ctx.stroke()}
+  ctx.fillStyle="#6c7480";ctx.fillRect(x-8,y+24,9,27);if(keys.Space){ctx.fillStyle="#ffb126";ctx.beginPath();ctx.moveTo(x-6,y+50);ctx.lineTo(x-1,y+70+Math.sin(time*30)*4);ctx.lineTo(x+2,y+50);ctx.fill()}
+  ctx.fillStyle="#173a67";ctx.fillRect(x+5,y,28,13);ctx.fillStyle="#f2c6a3";ctx.fillRect(x+8,y+12,23,17);ctx.fillStyle="#202733";ctx.fillRect(x+(player.facing>0?25:9),y+17,4,4);ctx.fillStyle="#173a67";ctx.fillRect(x+6,y+29,27,18);ctx.fillStyle="#ffd83d";ctx.fillRect(x+13,y+32,5,5);ctx.fillRect(x+22,y+32,5,5);ctx.fillRect(x+6,y+38,5,9);ctx.fillRect(x+28,y+38,5,9);ctx.fillStyle="#2f394a";ctx.fillRect(x+6,y+47,10,7);ctx.fillRect(x+23,y+47,10,7);
+  ctx.strokeStyle="#f2c6a3";ctx.lineWidth=7;ctx.lineCap="round";
+  if(handsOn()){
+    const leftUp=Math.sin(time*13)>0;
+    ctx.beginPath();
+    if(leftUp){
+      ctx.moveTo(x+7,y+35);ctx.lineTo(x-2,y+12);ctx.lineTo(x+1,y-3);
+      ctx.moveTo(x+32,y+35);ctx.lineTo(x+42,y+50);ctx.lineTo(x+43,y+58);
+    }else{
+      ctx.moveTo(x+7,y+35);ctx.lineTo(x-3,y+50);ctx.lineTo(x-4,y+58);
+      ctx.moveTo(x+32,y+35);ctx.lineTo(x+41,y+12);ctx.lineTo(x+38,y-3);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawShot(s){
+  const x=s.x-cameraX;
+  const y=s.y;
+  const r=s.r;
+
+  ctx.save();
+  ctx.fillStyle="#ff4fa3";
+  ctx.strokeStyle="#8a174f";
+  ctx.lineWidth=2.2;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle="rgba(255,255,255,.42)";
+  ctx.beginPath();
+  ctx.arc(x-r*.28,y-r*.30,Math.max(1.4,r*.16),0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+function drawFood(f){const x=f.x-cameraX,y=f.y;if(f.kind==="broccoli"){ctx.fillStyle="#2d8e42";ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.arc(x-8,y-4,7,0,Math.PI*2);ctx.arc(x+7,y-5,7,0,Math.PI*2);ctx.arc(x,y-10,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8fcb68";ctx.fillRect(x-3,y+7,6,10)}else if(f.kind==="carrot"){ctx.fillStyle="#f17d26";ctx.beginPath();ctx.moveTo(x-8,y-8);ctx.lineTo(x+9,y-6);ctx.lineTo(x,y+15);ctx.closePath();ctx.fill();ctx.fillStyle="#3c9a4a";ctx.fillRect(x-5,y-16,3,9);ctx.fillRect(x+2,y-16,3,9)}else if(f.kind==="apple"){ctx.fillStyle="#db3f3f";ctx.beginPath();ctx.arc(x,y,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5b3c1b";ctx.fillRect(x-1,y-17,3,7)}else if(f.kind==="banana"){ctx.strokeStyle="#f3cf3d";ctx.lineWidth=8;ctx.beginPath();ctx.arc(x,y-4,14,.2,2.4);ctx.stroke()}else{ctx.fillStyle="#59a94f";ctx.beginPath();ctx.arc(x-6,y,6,0,Math.PI*2);ctx.arc(x+2,y-3,6,0,Math.PI*2);ctx.arc(x+8,y+3,6,0,Math.PI*2);ctx.fill()}}
+function drawParticles(){for(const p of particles){ctx.globalAlpha=clamp(p.life*2,0,1);ctx.fillStyle=p.color;ctx.fillRect(p.x-cameraX,p.y,p.size,p.size)}ctx.globalAlpha=1}
+
+function drawRaryCelebration(){
+  if(time>=raryCelebrationUntil)return;
+  const remaining=raryCelebrationUntil-time;
+  const alpha=clamp(remaining/1.0,0,1);
+
+  ctx.save();
+  ctx.globalAlpha=Math.min(.68,alpha);
+  ctx.translate(W/2,H/2);
+  ctx.rotate(time*.65);
+  for(let i=0;i<20;i++){
+    ctx.rotate(Math.PI*2/20);
+    ctx.fillStyle=i%2?"#ffd84d":"#fff3a4";
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(42,-18);
+    ctx.lineTo(W*.8,-5);
+    ctx.lineTo(42,18);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha=Math.min(1,alpha+.25);
+  ctx.textAlign="center";
+  ctx.shadowColor="#000";
+  ctx.shadowBlur=12;
+  ctx.fillStyle="#fff";
+  ctx.font="1000 64px system-ui";
+  ctx.fillText("🦁 RARY! RARY! 🦁",W/2,H*.29);
+  ctx.fillStyle="#ffd84d";
+  ctx.font="1000 48px system-ui";
+  ctx.fillText("MAX AURA!",W/2,H*.39);
+  ctx.fillStyle="#fff";
+  ctx.font="1000 22px system-ui";
+  ctx.fillText("EXTRA HIT • FASTER • ABSOLUTE LEGEND",W/2,H*.46);
+  ctx.restore();
+}
+
+function draw(){
+  drawSky();drawTheme();drawPlatforms();drawExit();for(const p of wordPickups)drawWord(p);for(const d of decoyPickups)drawDecoy(d);for(const b of bonuses)drawBonus(b);drawRaryPickup();drawKey();drawBossPowerups();for(const e of enemies)drawMrLee(e);drawBoss();drawBossBin();for(const f of foods)drawFood(f);for(const s of shots)drawShot(s);drawPlayer();drawParticles();drawRaryCelebration();
+  if(player.x<370){ctx.fillStyle="#111827df";roundRect(ctx,60,552,330,48,10,true,false);ctx.fillStyle="#fff";ctx.font="900 17px system-ui";ctx.textAlign="left";ctx.fillText(level===1?"TUTORIAL: collect NOL → fly with SPACE → throw with F":level<=7?"Find the next number — look UP too! ↑":"MIXED NUMBERS — know the next word!",84,582)}
+}
+
+function loop(t){if(!running)return;const dt=Math.min(.033,(t-last)/1000||0);last=t;update(dt);draw();requestAnimationFrame(loop)}
+function press(code){
+  if(code==="KeyF"){
+    if(running)shoot();
+    keys[code]=true;
+    return;
+  }
+  if(code==="Space"&&!keys.Space&&running&&player.onGround){
+    player.vy=-610;
+    player.onGround=false;
+  }
+  keys[code]=true;
+}
+function release(code){
+  keys[code]=false;
+}
+
+window.addEventListener("keydown",e=>{if(["Space","ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.code))e.preventDefault();if(e.repeat&&e.code==="KeyF")return;if(e.code==="KeyR"){initLevel(level);if(!running){running=true;last=performance.now();requestAnimationFrame(loop)}return}press(e.code)},{passive:false});
+window.addEventListener("keyup",e=>release(e.code));
+document.querySelectorAll(".touchBtn").forEach(btn=>{const code=btn.dataset.key;const down=e=>{e.preventDefault();press(code)},up=e=>{e.preventDefault();release(code)};btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("pointerleave",e=>{if(e.buttons===0)up(e)})});
+startBtn.onclick=()=>{
+  overlay.style.display="none";
+  initLevel(1);
+  running=true;
+  last=performance.now();
+  document.body.dataset.gameRunning="true";
+  requestAnimationFrame(loop);
+};
+initLevel(1);
+draw();
+document.body.dataset.gameReady="true";
+if(new URLSearchParams(location.search).has("autotest"))startBtn.click();
+})();
+</script>
+</body>
+</html>
