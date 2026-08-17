@@ -1,4 +1,47 @@
-h.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+ocument.getElementById("keyPill"), ballPill=document.getElementById("ballPill"), raryPill=document.getElementById("raryPill"), powerPill=document.getElementById("powerPill"), bossPill=document.getElementById("bossPill");
+const deviceMode=document.getElementById("deviceMode");
+const DEVICE=document.documentElement.dataset.device||"computer";
+if(deviceMode)deviceMode.textContent=DEVICE==="ipad"?"iPad mode — touch controls enabled":DEVICE==="iphone"?"iPhone mode — landscape touch controls":DEVICE==="android"?"Android mode — landscape touch controls":"Computer mode — keyboard controls";
+
+const W=1280,H=720,GROUND=640,GRAV=1850;
+const WORDS=[["nol",0],["satu",1],["dua",2],["tiga",3],["empat",4],["lima",5],["enam",6],["tujuh",7],["delapan",8],["sembilan",9],["sepuluh",10]];
+const LEVEL_WORDS=["","satu","dua","tiga","empat","lima","enam","tujuh","delapan","sembilan","sepuluh"];
+const STAGES=[
+ null,
+ {name:"SPORTS CLASS",theme:"class",world:2700,enemies:1,gaps:0,fire:5.5},
+ {name:"RUNNING CLUB",theme:"running",world:3000,enemies:2,gaps:0,fire:5.0},
+ {name:"AFTER SCHOOL NETBALL",theme:"netball",world:3300,enemies:3,gaps:1,fire:4.6},
+ {name:"AFTER SCHOOL BASKETBALL",theme:"basketball",world:3600,enemies:4,gaps:1,fire:4.2},
+ {name:"MULTICULTURAL NETBALL CARNIVAL",theme:"multi",world:3950,enemies:5,gaps:2,fire:3.8,boss:"medium"},
+ {name:"LONG JUMP & LONG THROWS",theme:"jumps",world:4250,enemies:6,gaps:2,fire:3.5},
+ {name:"CROSS COUNTRY",theme:"cross",world:4550,enemies:7,gaps:3,fire:3.2},
+ {name:"FACTION CARNIVAL",theme:"faction",world:4800,enemies:8,gaps:3,fire:3.0},
+ {name:"INTERSCHOOL ATHLETICS CARNIVAL",theme:"interschool",world:5100,enemies:9,gaps:4,fire:2.7},
+ {name:"UNDERCOVER AREA / SPORTS SHED",theme:"shed",world:5400,enemies:10,gaps:4,fire:2.4,boss:"final"}
+];
+
+const FOOD={
+ broccoli:{label:"BROCCOLI",r:14},
+ carrot:{label:"CARROT",r:13},
+ apple:{label:"APPLE",r:13},
+ banana:{label:"BANANA",r:15},
+ peas:{label:"PEAS",r:12}
+};
+
+const keys={};
+let running=false,last=0,time=0,level=1,expected=0,deaths=0,cameraX=0,worldWidth=3050;
+let messageTimer=0,levelTransition=false,keySpawned=false,hasKey=false,raryUsed=false,raryCelebrationUntil=0;
+let platforms=[],wordPickups=[],decoyPickups=[],enemies=[],shots=[],foods=[],particles=[],bonuses=[],bossPowerups=[];
+let keyPickup=null,exitDoor=null,raryPickup=null,boss=null,bossIndex=-1,bossQueue=[],bossBin=null,bossPowerSpawnAt=0,autoBurstAt=0,enamTujuhBurstAt=0;
+let bossCheckpointMode=false,bossCheckpointIndex=0;
+
+
+const player={x:80,y:520,w:38,h:54,vx:0,vy:0,facing:1,onGround:false,invulnUntil:0,responsibilityUntil:0,danceUntil:0,enamTujuhUntil:0,ridingRary:false,ignoreHitsUntil:0,bossPowerUntil:0};
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function rand(a,b){return a+Math.random()*(b-a)}
+function rects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function roundRect(c,x,y,w,h,r,fill=true,stroke=false){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();if(fill)c.fill();if(stroke)c.stroke()}
 function active(t){return time<t}
 function achOn(){return active(player.invulnUntil)}
@@ -7,19 +50,52 @@ function danceOn(){return active(player.danceUntil)}
 function handsOn(){return active(player.enamTujuhUntil)}
 function say(text,secs=1.2){messageEl.innerHTML=text;messageEl.style.opacity="1";messageTimer=secs}
 
-function speakIndonesianNumber(word){
+const NUMBER_AUDIO_WORDS=["nol","satu","dua","tiga","empat","lima","enam","tujuh","delapan","sembilan","sepuluh"];
+let gameAudioCtx=null,numberAudioBuffers={},numberAudioLoadPromise=null,lastNumberSource=null;
+function unlockGameAudio(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return Promise.resolve(false);
+    if(!gameAudioCtx)gameAudioCtx=new AC();
+    if(gameAudioCtx.state==="suspended")gameAudioCtx.resume();
+    if(!numberAudioLoadPromise){
+      numberAudioLoadPromise=Promise.all(["audio/numbers1.json?v=universal2","audio/numbers2.json?v=universal2"].map(async url=>{
+        const r=await fetch(url);if(!r.ok)throw new Error(url);return r.json();
+      })).then(async packs=>{
+        const encoded=Object.assign({},...packs);
+        await Promise.all(NUMBER_AUDIO_WORDS.map(async word=>{
+          const b64=encoded[word];if(!b64)throw new Error(`audio ${word}`);
+          const bin=atob(b64),bytes=new Uint8Array(bin.length);
+          for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+          numberAudioBuffers[word]=await gameAudioCtx.decodeAudioData(bytes.buffer.slice(0));
+        }));
+        document.body.dataset.audioReady="true";return true;
+      }).catch(()=>false);
+    }
+    return numberAudioLoadPromise;
+  }catch(e){return Promise.resolve(false)}
+}
+function speechFallback(word){
   try{
     if(!("speechSynthesis" in window))return;
-    window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(word);
-    u.lang="id-ID";
-    u.rate=.88;
-    u.pitch=1.0;
-    const voices=window.speechSynthesis.getVoices();
-    const idVoice=voices.find(v=>/^id([-_]|$)/i.test(v.lang));
-    if(idVoice)u.voice=idVoice;
-    window.speechSynthesis.speak(u);
+    const u=new SpeechSynthesisUtterance(word);u.lang="id-ID";u.rate=.75;u.volume=1;
+    window.speechSynthesis.cancel();window.speechSynthesis.speak(u);
   }catch(e){}
+}
+function playNumberAudio(word){
+  try{
+    if(!gameAudioCtx||!numberAudioBuffers[word])return false;
+    if(lastNumberSource)try{lastNumberSource.stop()}catch(e){}
+    const src=gameAudioCtx.createBufferSource();
+    const gain=gameAudioCtx.createGain();gain.gain.value=1.0;
+    src.buffer=numberAudioBuffers[word];src.connect(gain);gain.connect(gameAudioCtx.destination);
+    src.start(0);lastNumberSource=src;return true;
+  }catch(e){return false}
+}
+function speakIndonesianNumber(word){
+  const clean=String(word||"").toLowerCase();
+  if(playNumberAudio(clean))return;
+  unlockGameAudio().then(ok=>{if(!ok||!playNumberAudio(clean))speechFallback(clean)});
 }
 
 function updateHUD(){
@@ -27,7 +103,7 @@ function updateHUD(){
   stagePill.textContent=STAGES[level].name;
   nextPill.textContent=expected<=10?`NEXT: ${WORDS[expected][0].toUpperCase()} (${expected})`:"NUMBERS COMPLETE";
   keyPill.textContent=bossCheckpointMode?"⚔️ BOSS CHECKPOINT: SEPULUH":!keySpawned?"🔑 KEY: LOCKED":hasKey?"🔑 KEY: FOUND":"🔑 KEY: FIND IT!";
-  ballPill.textContent="💗 PINK dodgeballs: READY";
+  ballPill.textContent="💗 PINK DODGEBALLS: READY";
   raryPill.style.display=player.ridingRary?"":"none";
   const buffs=[];
   if(handsOn())buffs.push(`🙌 ENAM TUJUH ${Math.ceil(player.enamTujuhUntil-time)}s`);
@@ -70,121 +146,4 @@ function safeSpots(count){
       candidates.push({x,y:p.y-48});
     }
   }
-  shuffle(candidates);return candidates.slice(0,count);
-}
-
-function paddedRect(o,pad=22){
-  return {x:o.x-pad,y:o.y-pad,w:o.w+pad*2,h:o.h+pad*2};
-}
-function overlapsAny(candidate,items,pad=22){
-  const c=paddedRect(candidate,pad);
-  return items.some(item=>rects(c,paddedRect(item,0)));
-}
-function surfaceYForX(x){
-  let best=null,bestDist=Infinity;
-  for(const p of platforms){
-    if(p.w<100)continue;
-    const left=p.x+55,right=p.x+p.w-55;
-    if(x>=left&&x<=right)return {x,y:p.y-48};
-    const cx=clamp(x,left,right),d=Math.abs(cx-x);
-    if(d<bestDist){bestDist=d;best={x:cx,y:p.y-48}}
-  }
-  return best||{x,y:GROUND-48};
-}
-function buildWords(){
-  wordPickups=[];
-  decoyPickups=[];
-
-  const start=330,end=worldWidth-560;
-  const heights=level===1
-    ? [545,535,520,500,475,445,410,370,325,275,225]
-    : [535,410,255,500,335,205,455,285,525,350,230];
-  let slots=[];
-  for(let i=0;i<WORDS.length;i++)slots.push(start+(end-start)*(i/(WORDS.length-1)));
-
-  // Levels 1-7: real number cards are spatially in exact order.
-  // Levels 8-10: the real number cards are spatially mixed.
-  if(level>=8)shuffle(slots);
-
-  for(let i=0;i<WORDS.length;i++){
-    wordPickups.push({
-      x:clamp(slots[i]-52,230,worldWidth-500),
-      y:heights[(i+level*2)%heights.length],
-      w:104,h:40,word:WORDS[i][0],num:WORDS[i][1],collected:false,decoy:false
-    });
-  }
-
-  // ENAM + TUJUH are the combo pair: always directly beside each other.
-  // On Levels 8-10 the pair may move as a unit, but the two cards stay together.
-  const enamCard=wordPickups.find(p=>p.num===6);
-  const tujuhCard=wordPickups.find(p=>p.num===7);
-  if(enamCard&&tujuhCard){
-    const pairX=level<=7?clamp(enamCard.x,300,worldWidth-780):clamp(rand(720,worldWidth-980),320,worldWidth-780);
-    const pairY=[225,315,405,500][(level+1)%4];
-    enamCard.x=pairX;enamCard.y=pairY;
-    tujuhCard.x=pairX+116;tujuhCard.y=pairY;
-  }
-
-  // Wrong-answer decoys: clearly red, with some <= roughly half-card overlap.
-  const decoyCount=[0,1,1,2,2,3,3,4,0,3,5][level];
-  for(let i=0;i<decoyCount;i++){
-    const source=wordPickups[Math.floor(Math.random()*wordPickups.length)];
-    let num=Math.floor(Math.random()*11);
-    if(num===source.num)num=(num+1+Math.floor(Math.random()*9))%11;
-    let candidate=null;
-    for(let tries=0;tries<80;tries++){
-      let x,y;
-      if(Math.random()<.58){
-        const side=Math.random()<.5?-1:1;
-        x=source.x+side*rand(55,96);
-        y=source.y+(Math.random()<.5?-1:1)*rand(22,58);
-      }else{
-        x=rand(300,worldWidth-560);
-        y=[200,260,320,390,455,535][Math.floor(rand(0,6))];
-      }
-      const c={x:clamp(x,220,worldWidth-500),y:clamp(y,185,565),w:104,h:40};
-      if(!decoyPickups.some(d=>rects(paddedRect(c,16),paddedRect(d,0)))){candidate=c;break}
-    }
-    if(!candidate)candidate={x:430+i*145,y:205+(i%4)*82,w:104,h:40};
-    decoyPickups.push({...candidate,word:WORDS[num][0],num,collected:false,decoy:true});
-  }
-}
-
-function buildBonuses(){
-  const occupied=[...wordPickups,...decoyPickups];
-  const candidates=safeSpots(80);
-  const defs=[
-    ["ACHIEVERS","⭐","#7ffcff"],
-    ["RESPONSIBILITY","🎯","#ffae52"],
-    ["RESPECT","🕺","#d98cff"]
-  ];
-  bonuses=[];
-  for(let i=0;i<defs.length;i++){
-    let placed=null;
-    for(const spot of candidates){
-      const candidate={x:spot.x-72,y:spot.y-6,w:144,h:42};
-      if(candidate.x<300||candidate.x>worldWidth-500)continue;
-      if(!overlapsAny(candidate,occupied,34)){
-        placed={...candidate,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
-        break;
-      }
-    }
-    if(!placed){
-      const x=550+i*((worldWidth-1300)/3);
-      placed={x,y:330+(i%2)*100,w:144,h:42,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
-    }
-    bonuses.push(placed);
-    occupied.push(placed);
-  }
-
-  let raryPlaced=null;
-  for(const spot of candidates){
-    const candidate={x:spot.x-62,y:spot.y-10,w:124,h:50};
-    if(candidate.x<500||candidate.x>worldWidth-600)continue;
-    if(!overlapsAny(candidate,occupied,48)){raryPlaced=candidate;break}
-  }
-  if(!raryPlaced)raryPlaced={x:worldWidth*.62,y:320,w:124,h:50};
-  raryPickup={...raryPlaced,collected:false};
-}
-
-function makeEnemies
+  shuffle(candidates);ret
