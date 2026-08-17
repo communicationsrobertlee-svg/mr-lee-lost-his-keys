@@ -1,0 +1,181 @@
+#4d5661";ctx.fillRect(x+18,y+36,exitDoor.w-36,exitDoor.h-36);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 15px system-ui";ctx.fillText(level===10?"SPORTS SHED":"EXIT",x+exitDoor.w/2,y+23);ctx.font="1000 25px system-ui";ctx.fillText(exitDoor.open?"OPEN":"🔒",x+exitDoor.w/2,y+86)}
+
+function drawMrLee(e){
+  if(!e.alive)return;const x=e.x-cameraX;if(x+e.w<0||x>W)return;
+  if(e.state==="broccoli"){
+    const y=GROUND-47;
+    ctx.save();
+    ctx.fillStyle="#2e8d40";
+    ctx.beginPath();
+    ctx.arc(x+e.w*.5,y+15,15,0,Math.PI*2);
+    ctx.arc(x+e.w*.25,y+20,13,0,Math.PI*2);
+    ctx.arc(x+e.w*.75,y+20,13,0,Math.PI*2);
+    ctx.arc(x+e.w*.38,y+5,14,0,Math.PI*2);
+    ctx.arc(x+e.w*.63,y+5,14,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle="#7fc45f";
+    ctx.fillRect(x+e.w*.43,y+24,e.w*.14,23);
+    ctx.fillStyle="#fff";
+    ctx.textAlign="center";
+    ctx.font="1000 9px system-ui";
+    ctx.fillText("MR LEE",x+e.w/2,y-7);
+    ctx.fillText("BROCCOLI",x+e.w/2,y+61);
+    ctx.restore();
+    return;
+  }
+  if(e.state==="bin"||e.state==="deadbin"){
+    const permanent=e.state==="deadbin";ctx.fillStyle=permanent?"#4f5962":"#66707a";ctx.fillRect(x+3,GROUND-42,e.w-6,42);ctx.fillStyle="#343a40";ctx.fillRect(x-3,GROUND-49,e.w+6,10);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 9px system-ui";ctx.fillText(permanent?"MR LEE BIN":"TRASH",x+e.w/2,GROUND-16);return;
+  }
+  const flex=e.state==="flex";ctx.save();ctx.fillStyle="#7a4d2b";roundRect(ctx,x,e.y,e.w,e.h,8,true,false);ctx.fillStyle="#40240f";ctx.fillRect(x+5,e.y+5,e.w-10,8);ctx.fillStyle="#fff";ctx.fillRect(x+8,e.y+17,10,10);ctx.fillRect(x+28,e.y+17,10,10);ctx.fillStyle="#111";ctx.fillRect(x+12,e.y+20,4,4);ctx.fillRect(x+32,e.y+20,4,4);ctx.fillStyle="#f0d0a9";ctx.fillRect(x+10,e.y+33,26,10);ctx.strokeStyle="#7a4d2b";ctx.lineWidth=8;
+  if(flex){ctx.beginPath();ctx.moveTo(x+5,e.y+35);ctx.lineTo(x-11,e.y+24);ctx.lineTo(x-18,e.y+36);ctx.moveTo(x+41,e.y+35);ctx.lineTo(x+57,e.y+24);ctx.lineTo(x+64,e.y+36);ctx.stroke();ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 11px system-ui";ctx.fillText("FLEX!",x+23,e.y-9)}ctx.restore();
+  if(time<e.speechUntil)drawSpeechBubble(x+e.w/2,e.y,e.speechText);
+}
+
+function drawBoss(){
+  if(!boss||!boss.alive)return;
+  const x=boss.x-cameraX,y=boss.y;
+  if(x+boss.w<0||x>W)return;
+  const flex=time<boss.flexUntil;
+  const mega=boss.name.includes("MEGA");
+
+  ctx.save();
+
+  if(mega){
+    // MEGA EVOLUTION MR LEE: huge robot body + absurd mechanical muscles.
+    ctx.shadowColor="#73e8ff";
+    ctx.shadowBlur=26;
+
+    // Robot torso.
+    ctx.fillStyle="#7d8b98";
+    roundRect(ctx,x+boss.w*.17,y+boss.h*.18,boss.w*.66,boss.h*.67,18,true,false);
+    ctx.fillStyle="#3d4954";
+    ctx.fillRect(x+boss.w*.26,y+boss.h*.30,boss.w*.48,boss.h*.22);
+
+    // Metallic head.
+    ctx.fillStyle="#9ba8b3";
+    roundRect(ctx,x+boss.w*.27,y,boss.w*.46,boss.h*.27,15,true,false);
+    ctx.fillStyle="#27323b";
+    ctx.fillRect(x+boss.w*.34,y+boss.h*.075,boss.w*.32,boss.h*.075);
+
+    // Glowing red robot eyes.
+    ctx.shadowColor="#ff3131";
+    ctx.shadowBlur=18;
+    ctx.fillStyle="#ff3131";
+    ctx.fillRect(x+boss.w*.35,y+boss.h*.09,boss.w*.09,boss.h*.045);
+    ctx.fillRect(x+boss.w*.56,y+boss.h*.09,boss.w*.09,boss.h*.045);
+    ctx.shadowBlur=0;
+
+    // Giant mechanical biceps and forearms.
+    const armY=y+boss.h*.38;
+    ctx.fillStyle="#aeb9c2";
+    ctx.beginPath();
+    ctx.ellipse(x+boss.w*.10,armY,boss.w*.18,boss.h*.16,-.18,0,Math.PI*2);
+    ctx.ellipse(x+boss.w*.90,armY,boss.w*.18,boss.h*.16,.18,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#667480";
+    ctx.beginPath();
+    ctx.ellipse(x-boss.w*.02,y+boss.h*.55,boss.w*.12,boss.h*.19,-.25,0,Math.PI*2);
+    ctx.ellipse(x+boss.w*1.02,y+boss.h*.55,boss.w*.12,boss.h*.19,.25,0,Math.PI*2);
+    ctx.fill();
+
+    // Robot abs / muscle plating.
+    ctx.fillStyle="#c0c8ce";
+    for(let row=0;row<3;row++){
+      ctx.fillRect(x+boss.w*.30,y+boss.h*(.52+row*.10),boss.w*.17,boss.h*.07);
+      ctx.fillRect(x+boss.w*.53,y+boss.h*(.52+row*.10),boss.w*.17,boss.h*.07);
+    }
+
+    // Chest reactor.
+    ctx.shadowColor="#6ff6ff";
+    ctx.shadowBlur=20;
+    ctx.fillStyle="#6ff6ff";
+    ctx.beginPath();
+    ctx.arc(x+boss.w/2,y+boss.h*.40,boss.w*.07,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    if(flex){
+      // Arms lift even wider when robot Mr Lee flexes.
+      ctx.strokeStyle="#c7d0d7";
+      ctx.lineWidth=Math.max(16,boss.w*.10);
+      ctx.beginPath();
+      ctx.moveTo(x+boss.w*.17,y+boss.h*.44);
+      ctx.lineTo(x-boss.w*.14,y+boss.h*.20);
+      ctx.lineTo(x-boss.w*.23,y+boss.h*.38);
+      ctx.moveTo(x+boss.w*.83,y+boss.h*.44);
+      ctx.lineTo(x+boss.w*1.14,y+boss.h*.20);
+      ctx.lineTo(x+boss.w*1.23,y+boss.h*.38);
+      ctx.stroke();
+
+      ctx.fillStyle="#fff";
+      ctx.textAlign="center";
+      ctx.font="1000 18px system-ui";
+      ctx.fillText("ROBOT FLEX!",x+boss.w/2,y-38);
+    }
+  }else{
+    ctx.fillStyle="#704426";
+    roundRect(ctx,x,y,boss.w,boss.h,Math.min(25,boss.w*.15),true,false);
+    ctx.fillStyle="#39200f";
+    ctx.fillRect(x+boss.w*.12,y+boss.h*.08,boss.w*.76,boss.h*.12);
+    ctx.fillStyle="#fff";
+    ctx.fillRect(x+boss.w*.18,y+boss.h*.26,boss.w*.18,boss.h*.13);
+    ctx.fillRect(x+boss.w*.64,y+boss.h*.26,boss.w*.18,boss.h*.13);
+    ctx.fillStyle="#c51616";
+    ctx.fillRect(x+boss.w*.25,y+boss.h*.3,boss.w*.06,boss.h*.055);
+    ctx.fillRect(x+boss.w*.69,y+boss.h*.3,boss.w*.06,boss.h*.055);
+    ctx.fillStyle="#f0d0a9";
+    ctx.fillRect(x+boss.w*.24,y+boss.h*.54,boss.w*.52,boss.h*.2);
+
+    if(flex){
+      ctx.strokeStyle="#704426";
+      ctx.lineWidth=Math.max(10,boss.w*.1);
+      ctx.beginPath();
+      ctx.moveTo(x+boss.w*.12,y+boss.h*.58);
+      ctx.lineTo(x-boss.w*.12,y+boss.h*.36);
+      ctx.lineTo(x-boss.w*.22,y+boss.h*.53);
+      ctx.moveTo(x+boss.w*.88,y+boss.h*.58);
+      ctx.lineTo(x+boss.w*1.12,y+boss.h*.36);
+      ctx.lineTo(x+boss.w*1.22,y+boss.h*.53);
+      ctx.stroke();
+    }
+  }
+
+  // Boss HP bar and name.
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#111";
+  ctx.fillRect(x,y+boss.h+8,boss.w,13);
+  ctx.fillStyle=mega?"#68f0ff":"#5bd36c";
+  ctx.fillRect(x,y+boss.h+8,boss.w*Math.max(0,boss.hp/boss.maxHp),13);
+  ctx.fillStyle="#fff";
+  ctx.textAlign="center";
+  ctx.font=`1000 ${Math.max(12,Math.min(20,boss.w*.12))}px system-ui`;
+  ctx.fillText(boss.name.toUpperCase(),x+boss.w/2,y-13);
+  ctx.restore();
+
+  if(time<boss.speechUntil)drawSpeechBubble(x+boss.w/2,y,boss.speechText,mega?280:220);
+}
+
+function drawRary(){
+  if(!player.ridingRary)return;
+  const x=player.x-cameraX,y=player.y+34;
+  ctx.save();
+  ctx.shadowColor="#ffd84d";
+  ctx.shadowBlur=30;
+  ctx.fillStyle="rgba(255,216,77,.35)";
+  ctx.beginPath();
+  ctx.ellipse(x+20,y+28,74+Math.sin(time*8)*5,45+Math.sin(time*8)*3,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#d29a2e";ctx.beginPath();ctx.ellipse(x+18,y+30,50,24,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#8b5b1d";ctx.beginPath();ctx.arc(x-12,y+18,26,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#e4b742";ctx.beginPath();ctx.arc(x-12,y+18,16,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#111";ctx.beginPath();ctx.arc(x-17,y+14,3,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#8b5b1d";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+52,y+28);ctx.quadraticCurveTo(x+76,y+6,x+84,y+29);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="1000 12px system-ui";ctx.textAlign="center";ctx.fillText("MAX AURA",x+18,y+69);
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const x=player.x-cameraX,y=player.y;drawRary();ctx.save();
+  if(da
