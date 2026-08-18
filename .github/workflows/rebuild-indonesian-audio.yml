@@ -18,39 +18,50 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y espeak ffmpeg
-      - name: Generate all 11 number recordings
+      - name: Generate complete 0-10 audio set
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p audio/v5 /tmp/mrlee-audio
+          mkdir -p audio/v6 /tmp/mrlee-audio
           for word in nol satu dua tiga empat lima enam tujuh delapan sembilan sepuluh; do
-            espeak -v id -s 112 -p 48 -a 190 -w "/tmp/mrlee-audio/${word}.wav" "$word"
+            espeak -v id -s 120 -p 48 -a 190 -w "/tmp/mrlee-audio/${word}.wav" "$word"
             ffmpeg -y -loglevel error \
               -i "/tmp/mrlee-audio/${word}.wav" \
-              -af 'apad=pad_dur=0.50' \
-              -t 2.2 -ar 22050 -ac 1 -codec:a libmp3lame -b:a 40k \
-              "audio/v5/${word}.mp3"
+              -af 'apad=pad_dur=0.60' \
+              -ar 44100 -ac 1 -codec:a libmp3lame -b:a 96k \
+              "audio/v6/${word}.mp3"
           done
-          printf '%s\n' 'Indonesian number audio generated together with espeak -v id; speed 112; pitch 48; 500ms trailing silence.' > audio/v5/README.txt
-      - name: Verify every number exists and has tail room
+      - name: Build the two game audio packs from the same recordings
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, json, pathlib
+          words=['nol','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh']
+          data={w:base64.b64encode(pathlib.Path(f'audio/v6/{w}.mp3').read_bytes()).decode() for w in words}
+          pathlib.Path('audio/numbers1.json').write_text(json.dumps({w:data[w] for w in words[:6]},separators=(',',':')))
+          pathlib.Path('audio/numbers2.json').write_text(json.dumps({w:data[w] for w in words[6:]},separators=(',',':')))
+          PY
+          printf '%s\n' 'All 11 recordings generated together: espeak Indonesian voice, speed 120, 600ms trailing silence.' > audio/v6/README.txt
+      - name: Verify SATU and TUJUH plus all 11 files
         shell: bash
         run: |
           set -euo pipefail
           for word in nol satu dua tiga empat lima enam tujuh delapan sembilan sepuluh; do
-            test -s "audio/v5/${word}.mp3"
-            ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "audio/v5/${word}.mp3"
+            test -s "audio/v6/${word}.mp3"
+            echo -n "$word: "
+            ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "audio/v6/${word}.mp3"
           done
           echo 'SATU phonemes:'
           espeak -q -v id --ipa satu
           echo 'TUJUH phonemes:'
           espeak -q -v id --ipa tujuh
-      - name: Commit complete audio set
+      - name: Commit complete audio set together
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add audio/v5
+          git add audio/v6 audio/numbers1.json audio/numbers2.json
           if git diff --cached --quiet; then
             echo 'Audio already current.'
           else
