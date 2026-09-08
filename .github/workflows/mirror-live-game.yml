@@ -1,0 +1,120 @@
+name: Mirror Live Game With iPad Touch Patch
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/mirror-live-game.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  mirror-live-game:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download exact live ChatGPT game
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 \
+            -A 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1' \
+            'https://mr-lee-lost-keys-3d-test.awesomenoon.chatgpt.site/' \
+            -o /tmp/mrlee-live.html
+          test -s /tmp/mrlee-live.html
+
+      - name: Inject iPad anti-zoom patch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p live-patched
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          origin = 'https://mr-lee-lost-keys-3d-test.awesomenoon.chatgpt.site'
+          html = Path('/tmp/mrlee-live.html').read_text(errors='replace')
+
+          # Keep assets on the original public game host when the mirrored HTML
+          # contains root-relative links.
+          html = re.sub(r'((?:src|href)=["\'])/(?!/)', r'\1' + origin + '/', html, flags=re.I)
+
+          patch = r'''
+          <!-- iPad rapid-tap patch: gameplay unchanged -->
+          <style id="mrlee-ipad-touch-patch">
+            html, body {
+              touch-action: manipulation !important;
+              -webkit-tap-highlight-color: transparent !important;
+            }
+            canvas,
+            button,
+            [role="button"],
+            [data-key],
+            [data-action],
+            [class*="btn" i],
+            [class*="button" i],
+            [class*="touch" i],
+            [id*="touch" i] {
+              touch-action: manipulation !important;
+              -webkit-user-select: none !important;
+              user-select: none !important;
+              -webkit-touch-callout: none !important;
+              -webkit-tap-highlight-color: transparent !important;
+            }
+          </style>
+          <script id="mrlee-ipad-touch-patch-js">
+          (() => {
+            const selector = 'canvas,button,[role="button"],[data-key],[data-action],[class*="btn" i],[class*="button" i],[class*="touch" i],[id*="touch" i]';
+            const apply = () => {
+              document.querySelectorAll(selector).forEach(el => {
+                el.style.touchAction = 'manipulation';
+                el.style.webkitUserSelect = 'none';
+                el.style.userSelect = 'none';
+                el.style.webkitTouchCallout = 'none';
+                el.style.webkitTapHighlightColor = 'transparent';
+              });
+            };
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply, {once:true});
+            else apply();
+            new MutationObserver(apply).observe(document.documentElement, {childList:true, subtree:true});
+            document.addEventListener('dblclick', e => {
+              if (e.target && e.target.closest && e.target.closest(selector)) e.preventDefault();
+            }, {capture:true, passive:false});
+          })();
+          </script>
+          '''
+
+          if '</head>' in html.lower():
+              pos = html.lower().rfind('</head>')
+              html = html[:pos] + patch + html[pos:]
+          else:
+              html = patch + html
+
+          Path('live-patched/index.html').write_text(html)
+          Path('live-patched/PATCH-NOTE.txt').write_text(
+              'Exact live game mirror with iPad rapid-tap/double-tap zoom prevention injected. No gameplay changes.\n'
+          )
+          PY
+
+      - name: Verify patch marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'mrlee-ipad-touch-patch' live-patched/index.html
+          grep -q 'touch-action: manipulation' live-patched/index.html
+
+      - name: Commit mirrored patched game
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live-patched
+          if git diff --cached --quiet; then
+            echo 'Patched live mirror already current.'
+          else
+            git commit -m 'Mirror exact live game with iPad touch patch'
+            git push
+          fi
