@@ -6,71 +6,18 @@
 <meta name="theme-color" content="#10291f">
 <title>Mr Lee Lost His Keys! — 2.5D</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10291f;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}
-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;background:#78b9de}
-#hud{position:fixed;z-index:20;top:max(7px,env(safe-area-inset-top));left:max(7px,env(safe-area-inset-left));right:max(7px,env(safe-area-inset-right));display:flex;gap:5px;flex-wrap:wrap;pointer-events:none}
-.pill{padding:6px 9px;border-radius:999px;border:1px solid #ffffff35;background:#07111bd9;font-weight:950;font-size:11px;box-shadow:0 4px 14px #0006}
-#message{position:fixed;z-index:24;top:13%;left:50%;transform:translateX(-50%);max-width:min(720px,84vw);padding:9px 14px;border-radius:13px;background:#07111be8;border:2px solid #ffffff3e;font-weight:950;text-align:center;opacity:0;transition:.16s;pointer-events:none;text-shadow:0 1px 2px #000}
-#message.show{opacity:1}
-#bossWrap{display:none;position:fixed;z-index:25;top:64px;left:50%;transform:translateX(-50%);width:min(560px,75vw);text-align:center;font-weight:1000}
-#bossTrack{height:15px;border-radius:999px;background:#241a20;border:2px solid #ffffff70;overflow:hidden}#bossBar{height:100%;width:100%;background:linear-gradient(90deg,#ff5d62,#ffd052)}
-#overlay{position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 30%,#295b45,#10291f 55%,#07110d)}
-#card{width:min(760px,94vw);max-height:92vh;overflow:auto;padding:clamp(18px,3vw,34px);border-radius:24px;border:2px solid #ffffff2c;background:#0c1722e9;box-shadow:0 22px 80px #0009;text-align:center}
-.kicker{font-size:11px;letter-spacing:.17em;font-weight:1000;color:#ffd84d}h1{font-size:clamp(42px,8vw,82px);line-height:.83;margin:12px 0 18px;letter-spacing:-.055em;text-transform:uppercase;text-shadow:0 5px 0 #163c28}
-.story{font-size:clamp(14px,2vw,19px);line-height:1.35;color:#e9f4ee}.story b{color:white}
-.controls{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:18px 0}.controls span{border:1px solid #ffffff25;border-radius:9px;background:#ffffff0e;padding:7px 9px;font-size:12px;font-weight:850}kbd{background:#f1ecd9;color:#173426;border-radius:5px;padding:2px 5px;font-weight:950}
-#start{border:0;border-radius:15px;padding:14px 25px;background:#ffd84d;color:#112318;font-weight:1000;font-size:19px;box-shadow:0 6px 0 #9c8018;cursor:pointer}#start:active{transform:translateY(4px);box-shadow:0 2px 0 #9c8018}
-.small{font-size:12px;color:#bfd0c7}.pink{color:#ff78b7}.gold{color:#ffd84d}.green{color:#76e3a2}
-#touch{position:fixed;z-index:35;left:max(9px,env(safe-area-inset-left));right:max(9px,env(safe-area-inset-right));bottom:max(9px,env(safe-area-inset-bottom));display:none;justify-content:space-between;align-items:end;pointer-events:none}
-.cluster{display:grid;gap:7px;pointer-events:auto}.dpad{grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,58px)}.actions{grid-template-columns:repeat(2,72px);grid-template-rows:repeat(2,58px)}
-.btn{border:2px solid #ffffff58;background:#0b1722de;color:#fff;border-radius:15px;font-weight:1000;font-size:20px;display:grid;place-items:center;user-select:none;-webkit-user-select:none;box-shadow:0 4px 12px #0006}.btn[data-k=f]{grid-column:2}.btn[data-k=l]{grid-column:1;grid-row:2}.btn[data-k=b]{grid-column:2;grid-row:2}.btn[data-k=r]{grid-column:3;grid-row:2}.btn.run{background:#245c3c;font-size:15px}.btn.jump{background:#345087;font-size:14px}.btn.throw{background:#8c2d5c;grid-column:1/3;font-size:15px}.btn.on{filter:brightness(1.45);transform:scale(.96)}
-#rotate{display:none;position:fixed;z-index:90;inset:0;background:#07110d;place-items:center;text-align:center;font-size:24px;font-weight:1000;padding:30px}#rotate small{display:block;font-size:13px;color:#bfd0c7;margin-top:9px}
-@media(pointer:coarse),(max-width:900px){#touch{display:flex}.pill{font-size:9px;padding:5px 7px}#message{top:9%;font-size:12px;max-width:65vw}.controls{display:none}}
-@media(orientation:portrait) and (max-width:1100px){#rotate{display:grid}}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10291f;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}canvas{position:fixed;inset:0;width:100%;height:100%;display:block;background:#78b9de}#hud{position:fixed;z-index:20;top:max(7px,env(safe-area-inset-top));left:max(7px,env(safe-area-inset-left));right:max(7px,env(safe-area-inset-right));display:flex;gap:5px;flex-wrap:wrap;pointer-events:none}.pill{padding:6px 9px;border-radius:999px;border:1px solid #ffffff35;background:#07111bd9;font-weight:950;font-size:11px;box-shadow:0 4px 14px #0006}#message{position:fixed;z-index:24;top:13%;left:50%;transform:translateX(-50%);max-width:min(720px,84vw);padding:9px 14px;border-radius:13px;background:#07111be8;border:2px solid #ffffff3e;font-weight:950;text-align:center;opacity:0;transition:.16s;pointer-events:none}#message.show{opacity:1}#bossWrap{display:none;position:fixed;z-index:25;top:64px;left:50%;transform:translateX(-50%);width:min(560px,75vw);text-align:center;font-weight:1000}#bossTrack{height:15px;border-radius:999px;background:#241a20;border:2px solid #ffffff70;overflow:hidden}#bossBar{height:100%;width:100%;background:linear-gradient(90deg,#ff5d62,#ffd052)}#overlay{position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 30%,#295b45,#10291f 55%,#07110d)}#card{width:min(760px,94vw);max-height:92vh;overflow:auto;padding:clamp(18px,3vw,34px);border-radius:24px;border:2px solid #ffffff2c;background:#0c1722e9;box-shadow:0 22px 80px #0009;text-align:center}.kicker{font-size:11px;letter-spacing:.17em;font-weight:1000;color:#ffd84d}h1{font-size:clamp(42px,8vw,82px);line-height:.83;margin:12px 0 18px;letter-spacing:-.055em;text-transform:uppercase;text-shadow:0 5px 0 #163c28}.story{font-size:clamp(14px,2vw,19px);line-height:1.35;color:#e9f4ee}.controls{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:18px 0}.controls span{border:1px solid #ffffff25;border-radius:9px;background:#ffffff0e;padding:7px 9px;font-size:12px;font-weight:850}kbd{background:#f1ecd9;color:#173426;border-radius:5px;padding:2px 5px;font-weight:950}#start{border:0;border-radius:15px;padding:14px 25px;background:#ffd84d;color:#112318;font-weight:1000;font-size:19px;box-shadow:0 6px 0 #9c8018}.small{font-size:12px;color:#bfd0c7}#touch{position:fixed;z-index:35;left:max(9px,env(safe-area-inset-left));right:max(9px,env(safe-area-inset-right));bottom:max(9px,env(safe-area-inset-bottom));display:none;justify-content:space-between;align-items:end;pointer-events:none}.cluster{display:grid;gap:7px;pointer-events:auto}.dpad{grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,58px)}.actions{grid-template-columns:repeat(2,72px);grid-template-rows:repeat(2,58px)}.btn{border:2px solid #ffffff58;background:#0b1722de;color:#fff;border-radius:15px;font-weight:1000;font-size:20px;display:grid;place-items:center;user-select:none;-webkit-user-select:none;box-shadow:0 4px 12px #0006}.btn[data-k=f]{grid-column:2}.btn[data-k=l]{grid-column:1;grid-row:2}.btn[data-k=b]{grid-column:2;grid-row:2}.btn[data-k=r]{grid-column:3;grid-row:2}.btn.run{background:#245c3c;font-size:15px}.btn.jump{background:#345087;font-size:14px}.btn.throw{background:#8c2d5c;grid-column:1/3;font-size:15px}.btn.on{filter:brightness(1.45);transform:scale(.96)}#rotate{display:none;position:fixed;z-index:90;inset:0;background:#07110d;place-items:center;text-align:center;font-size:24px;font-weight:1000;padding:30px}#rotate small{display:block;font-size:13px;color:#bfd0c7;margin-top:9px}@media(pointer:coarse),(max-width:900px){#touch{display:flex}.pill{font-size:9px;padding:5px 7px}#message{top:9%;font-size:12px;max-width:65vw}.controls{display:none}}@media(orientation:portrait) and (max-width:1100px){#rotate{display:grid}}
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="hud">
- <div class="pill" id="level">LEVEL 1 · SPORTS CLASS</div>
- <div class="pill" id="angka">ANGKA 0 / 11</div>
- <div class="pill" id="key">KUNCI 0 / 1</div>
- <div class="pill" id="next">NEXT NOL (0)</div>
- <div class="pill" id="energy">ENERGI ♥ ♥ ♥ ♥ ♥</div>
- <div class="pill" id="power">◆ RESPONSIBILITY · 🤝 RESPECT · ★ ACHIEVER</div>
-</div>
+<div id="hud"><div class="pill" id="level">LEVEL 1 · SPORTS CLASS</div><div class="pill" id="angka">ANGKA 0 / 11</div><div class="pill" id="key">KUNCI 0 / 1</div><div class="pill" id="next">NEXT NOL (0)</div><div class="pill" id="energy">ENERGI ♥ ♥ ♥ ♥ ♥</div><div class="pill" id="power">◆ RESPONSIBILITY · 🤝 RESPECT · ★ ACHIEVER</div></div>
 <div id="message"></div>
 <div id="bossWrap"><div id="bossName">MR LEE</div><div id="bossTrack"><div id="bossBar"></div></div></div>
-<div id="touch">
- <div class="cluster dpad">
-   <div class="btn" data-k="f">▲</div><div class="btn" data-k="l">↶</div><div class="btn" data-k="b">▼</div><div class="btn" data-k="r">↷</div>
- </div>
- <div class="cluster actions">
-   <div class="btn run" data-k="run">RUN</div><div class="btn jump" data-k="jump">JUMP</div><div class="btn throw" data-k="throw">● THROW</div>
- </div>
-</div>
+<div id="touch"><div class="cluster dpad"><div class="btn" data-k="f">▲</div><div class="btn" data-k="l">↶</div><div class="btn" data-k="b">▼</div><div class="btn" data-k="r">↷</div></div><div class="cluster actions"><div class="btn run" data-k="run">RUN</div><div class="btn jump" data-k="jump">JUMP</div><div class="btn throw" data-k="throw">● THROW</div></div></div>
 <div id="rotate">↻ TURN YOUR DEVICE SIDEWAYS<small>Mr Lee works best in landscape.</small></div>
-<div id="overlay"><div id="card">
- <div class="kicker">THE 2.5D CLASSROOM BUILD</div>
- <h1>MR LEE<br>LOST HIS KEYS!</h1>
- <p class="story">Collect <b>NOL → SEPULUH</b> in order, find the key and unlock the sports shed. Throw <span class="pink"><b>pink dodgeballs</b></span> at the Mini Mr Lees—or <b>jump on them</b>—while they throw healthy food.</p>
- <div class="controls"><span><kbd>W</kbd>/<kbd>S</kbd> move</span><span><kbd>A</kbd>/<kbd>D</kbd> turn</span><span><kbd>SHIFT</kbd> run</span><span><kbd>J</kbd> jump</span><span><kbd>SPACE</kbd> throw</span></div>
- <p class="story"><span class="green"><b>RARY = MAX AURA.</b></span> Responsibility fires five ricocheting balls. Respect turns fruit to confetti and starts a dance party. Achiever adds speed, invincibility and a smashing aura.</p>
- <button id="start">START GAME</button>
- <p class="small">Australian school chaos. Best played in landscape with sound on.</p>
-</div></div>
-<script>
-(()=>{"use strict";
-const SPRITE="data:image/webp;base64,UklGRrLTAQBXRUJQVlA4WAoAAAAgAAAAnwMAOjoCAA...TRUNCATED...";
-const img=new Image();img.src=SPRITE;
-const cvs=document.getElementById("game"),ctx=cvs.getContext("2d");
-const ui={level:document.getElementById("level"),angka:document.getElementById("angka"),key:document.getElementById("key"),next:document.getElementById("next"),energy:document.getElementById("energy"),power:document.getElementById("power"),message:document.getElementById("message"),overlay:document.getElementById("overlay"),start:document.getElementById("start"),bossWrap:document.getElementById("bossWrap"),bossName:document.getElementById("bossName"),bossBar:document.getElementById("bossBar")};
-let W=innerWidth,H=innerHeight,DPR=Math.min(devicePixelRatio||1,1.6);
-function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,1.6);cvs.width=W*DPR;cvs.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0)}addEventListener("resize",resize);resize();
-const WORDS=[["NOL",0],["SATU",1],["DUA",2],["TIGA",3],["EMPAT",4],["LIMA",5],["ENAM",6],["TUJUH",7],["DELAPAN",8],["SEMBILAN",9],["SEPULUH",10]];
-const STAGES=[{name:"SPORTS CLASS",sky:"#8fc9ed",ground:"#73964e",accent:"#f4d35e",kind:"cones"},{name:"RUNNING CLUB",sky:"#a8d8f0",ground:"#5e8844",accent:"#e45144",kind:"track"},{name:"AFTER SCHOOL NETBALL",sky:"#efb47d",ground:"#578557",accent:"#ff7eb5",kind:"netball"},{name:"AFTER SCHOOL BASKETBALL",sky:"#efa56f",ground:"#557b50",accent:"#ef9b36",kind:"basketball"},{name:"FACTION CARNIVAL",sky:"#79bce0",ground:"#63904e",accent:"#e84650",kind:"factions"},{name:"LIGHTNING CARNIVAL",sky:"#7bb3d9",ground:"#59854c",accent:"#ffdd4d",kind:"goals"},{name:"ATHLETICS DAY",sky:"#9bd2eb",ground:"#708f4d",accent:"#f49a3d",kind:"athletics"},{name:"INDONESIAN WEEK",sky:"#e9c581",ground:"#6b8d4f",accent:"#e64b43",kind:"indo"},{name:"SPORTS SHED CHAOS",sky:"#70889a",ground:"#506a44",accent:"#2f7d4e",kind:"shed"},{name:"FINAL · MEGA EVOLUTION",sky:"#50576d",ground:"#425b3d",accent:"#ff4f78",kind:"final"}];
-// Full self-contained 2.5D engine omitted here for brevity in payload preview; repository commit contains the complete file.
-})();
-</script>
+<div id="overlay"><div id="card"><div class="kicker">THE 2.5D CLASSROOM BUILD</div><h1>MR LEE<br>LOST HIS KEYS!</h1><p class="story">Collect <b>NOL → SEPULUH</b> in order, find the key and unlock the sports shed. Throw <b>pink dodgeballs</b> at the Mini Mr Lees—or jump on them—while they throw healthy food.</p><div class="controls"><span><kbd>W</kbd>/<kbd>S</kbd> move</span><span><kbd>A</kbd>/<kbd>D</kbd> turn</span><span><kbd>SHIFT</kbd> run</span><span><kbd>J</kbd> jump</span><span><kbd>SPACE</kbd> throw</span></div><p class="story"><b>RARY = MAX AURA.</b> Responsibility fires five ricocheting balls. Respect turns fruit to confetti and starts a dance party. Achiever adds speed, invincibility and a smashing aura.</p><button id="start">START GAME</button><p class="small">Australian-school chaos. Best played in landscape with sound on.</p></div></div>
+<script src="sprite25d.js?v=2"></script>
+<script src="game25d.js?v=2"></script>
 </body>
 </html>
