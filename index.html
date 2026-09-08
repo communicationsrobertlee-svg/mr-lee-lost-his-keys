@@ -1,36 +1,64 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#111b2a"><title>Mr Lee Lost His Keys!</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden;background:#111b2a}#game{position:fixed;inset:0;width:100%;height:100%;border:0;background:#111b2a}#loading{position:fixed;inset:0;z-index:10;display:grid;place-items:center;color:white;background:#111b2a;font:700 20px system-ui;text-align:center;padding:24px}</style></head><body><div id="loading">Loading Mr Lee…</div><iframe id="game" title="Mr Lee Lost His Keys" allow="autoplay"></iframe><script>(()=>{const files=['chunks/part00.txt','chunks/part01.txt','chunks/part02.txt','chunks/part03.txt','chunks/part04.txt','chunks/part05.txt','chunks/part06.txt','chunks/part07.txt'];Promise.all(files.map(f=>fetch(f+'?v=boop-only-v8',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(f);return r.text()}))).then(parts=>{let html=parts.join('');html=html.replace('font-size:clamp(20px,2.5vw,38px)','font-size:clamp(16px,1.8vw,26px)');html=html.replace('.phoneStory{display:none}',`.phoneStory{display:none} html[data-input="touch"] #message{top:6%;max-width:58%;padding:6px 10px;border-width:2px;border-radius:9px;font-size:clamp(12px,2.4vh,17px);line-height:1.08}`);const boop=`let pickupAudioCtx=null;
-function unlockPickupBoop(){
-  try{
-    const AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC)return;
-    if(!pickupAudioCtx)pickupAudioCtx=new AC();
-    if(pickupAudioCtx.state==='suspended')pickupAudioCtx.resume().catch(()=>{});
-  }catch(e){}
-}
-function playPickupBoop(){
-  try{
-    unlockPickupBoop();
-    if(!pickupAudioCtx)return;
-    const now=pickupAudioCtx.currentTime;
-    const gain=pickupAudioCtx.createGain();
-    const low=pickupAudioCtx.createOscillator();
-    const high=pickupAudioCtx.createOscillator();
-    low.type='sine';high.type='sine';
-    low.frequency.setValueAtTime(330,now);
-    low.frequency.exponentialRampToValueAtTime(440,now+.075);
-    high.frequency.setValueAtTime(660,now+.035);
-    high.frequency.exponentialRampToValueAtTime(880,now+.13);
-    gain.gain.setValueAtTime(.0001,now);
-    gain.gain.exponentialRampToValueAtTime(.22,now+.008);
-    gain.gain.exponentialRampToValueAtTime(.09,now+.075);
-    gain.gain.exponentialRampToValueAtTime(.0001,now+.19);
-    low.connect(gain);high.connect(gain);gain.connect(pickupAudioCtx.destination);
-    low.start(now);high.start(now+.035);low.stop(now+.2);high.stop(now+.2);
-  }catch(e){}
-}
-
-`;html=html.replace('function collectWord(p){',boop+'function collectWord(p){');html=html.replaceAll('speakIndonesianNumber(p.word);','playPickupBoop();');html=html.replace('function speakIndonesianNumber(word){','function speakIndonesianNumber(word){return;');html=html.replace('window.speechSynthesis.cancel();window.speechSynthesis.speak(u);','window.speechSynthesis.cancel();');html=html.replace('  unlockGameAudio();','  unlockPickupBoop();');html=html.replace(`  if(document.documentElement.dataset.input==="touch"){
-    const el=document.documentElement;
-    try{if(el.requestFullscreen)el.requestFullscreen().catch(()=>{})}catch(e){}
-  }
-`,'');const frame=document.getElementById('game');frame.addEventListener('load',()=>{document.getElementById('loading').style.display='none'},{once:true});frame.srcdoc=html}).catch(e=>{document.getElementById('loading').innerHTML='Game failed to load.<br><small>'+String(e)+'</small>'})})();</script><!-- boop-only-v8 --></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0f3523">
+<title>Mr Lee Lost His Keys! — 3D</title>
+<style>
+:root{--panel:#0d1722dc;--line:#ffffff38;--yellow:#ffd84d;--pink:#ff5ea8;--green:#0f5c36}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101a25;color:#fff;font-family:Inter,ui-rounded,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;touch-action:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#hud{position:fixed;z-index:20;top:max(8px,env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.pill{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:999px;padding:7px 10px;font-weight:900;font-size:12px;letter-spacing:.02em;box-shadow:0 4px 16px #0005}
+#message{position:fixed;z-index:25;top:13%;left:50%;transform:translateX(-50%);max-width:min(760px,88vw);background:#111b2ae8;border:2px solid #ffffff42;border-radius:16px;padding:10px 16px;text-align:center;font-weight:950;font-size:clamp(14px,2vw,22px);pointer-events:none;opacity:0;transition:.16s;box-shadow:0 8px 30px #0007}
+#message.show{opacity:1}
+#bossBarWrap{position:fixed;z-index:22;top:68px;left:50%;transform:translateX(-50%);width:min(560px,80vw);display:none;pointer-events:none}
+#bossName{text-align:center;font-weight:1000;text-shadow:0 2px 8px #000;margin-bottom:5px}.bar{height:16px;border-radius:999px;background:#1b1d27;border:2px solid #ffffff66;overflow:hidden;box-shadow:0 4px 16px #0007}.bar>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff5b57,#ffca5b);transition:width .12s}
+#overlay{position:fixed;z-index:50;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#203c31 0,#10231b 45%,#07120d 100%);padding:20px}
+#card{width:min(780px,94vw);max-height:92vh;overflow:auto;border:2px solid #ffffff2e;background:#101a25e8;border-radius:26px;padding:clamp(20px,4vw,40px);box-shadow:0 26px 90px #000a;text-align:center}
+.kicker{font-weight:1000;color:#f7d849;letter-spacing:.18em;font-size:12px}.title{font-size:clamp(42px,9vw,88px);line-height:.82;margin:12px 0 18px;letter-spacing:-.06em;text-transform:uppercase;text-shadow:0 5px 0 #183d28}.story{font-size:clamp(15px,2.2vw,20px);line-height:1.4;color:#eef6f2}.controls{margin:20px auto;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.controls span{background:#ffffff0f;border:1px solid #ffffff25;padding:8px 10px;border-radius:10px;font-weight:800;font-size:13px}kbd{background:#f5f2df;color:#132318;border-radius:6px;padding:3px 6px;font:900 12px system-ui;box-shadow:0 2px 0 #998}
+#startBtn{border:0;border-radius:16px;padding:15px 26px;background:#f8d849;color:#112217;font-size:20px;font-weight:1000;cursor:pointer;box-shadow:0 7px 0 #9d7f14;transform:translateY(0)}#startBtn:active{transform:translateY(5px);box-shadow:0 2px 0 #9d7f14}
+.small{font-size:12px;color:#c9d7d1}.accent{color:#ff70b6}.green{color:#6fe09e}
+#touch{position:fixed;z-index:35;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));display:none;justify-content:space-between;align-items:end;pointer-events:none}.touchCluster{display:grid;gap:7px;pointer-events:auto}.dpad{grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,58px)}.actions{grid-template-columns:repeat(2,70px);grid-template-rows:repeat(2,58px)}
+.tbtn{border:2px solid #ffffff55;background:#0d1722d9;color:white;border-radius:16px;font-weight:1000;font-size:20px;display:grid;place-items:center;user-select:none;-webkit-user-select:none;box-shadow:0 4px 13px #0006}.tbtn[data-k="forward"]{grid-column:2}.tbtn[data-k="left"]{grid-column:1;grid-row:2}.tbtn[data-k="back"]{grid-column:2;grid-row:2}.tbtn[data-k="right"]{grid-column:3;grid-row:2}.tbtn small{display:block;font-size:9px;line-height:1}.tbtn.run{background:#235b3c}.tbtn.throw{background:#822955}.tbtn.jump{background:#334b84}.tbtn:active,.tbtn.on{filter:brightness(1.45);transform:scale(.96)}
+#rotate{position:fixed;z-index:80;inset:0;background:#08130e;color:white;display:none;place-items:center;text-align:center;font-size:26px;font-weight:1000;padding:30px}.rotateInner span{display:block;font-size:14px;margin-top:10px;color:#c3d8cd}
+@media(pointer:coarse),(max-width:900px){#touch{display:flex}.pill{font-size:9px;padding:5px 7px}#message{top:9%;max-width:68vw;font-size:13px;padding:7px 9px;border-radius:10px}.controls{display:none}#card{padding:22px}.story{font-size:15px}.title{font-size:clamp(42px,12vw,70px)}}
+@media(orientation:portrait) and (max-width:1100px){#rotate{display:grid}}
+</style>
+</head>
+<body>
+<div id="hud">
+  <div class="pill" id="levelPill">LEVEL 1 · SPORTS CLASS</div>
+  <div class="pill" id="angkaPill">ANGKA 0 / 11</div>
+  <div class="pill" id="keyPill">KUNCI 0 / 1</div>
+  <div class="pill">DODGEBALLS ∞</div>
+  <div class="pill" id="nextPill">NEXT NOL (0)</div>
+  <div class="pill" id="energyPill">ENERGI ♥ ♥ ♥ ♥ ♥</div>
+  <div class="pill" id="powerPill">◆ RESPONSIBILITY · 🤝 RESPECT · ★ ACHIEVER</div>
+</div>
+<div id="message"></div>
+<div id="bossBarWrap"><div id="bossName"></div><div class="bar"><i id="bossBar"></i></div></div>
+<div id="touch">
+  <div class="touchCluster dpad">
+    <div class="tbtn" data-k="forward">▲</div><div class="tbtn" data-k="left">↶</div><div class="tbtn" data-k="back">▼</div><div class="tbtn" data-k="right">↷</div>
+  </div>
+  <div class="touchCluster actions">
+    <div class="tbtn run" data-k="run">RUN</div><div class="tbtn jump" data-k="jump">JUMP</div><div class="tbtn throw" data-k="throw" style="grid-column:1/3">● <small>THROW</small></div>
+  </div>
+</div>
+<div id="rotate"><div class="rotateInner">↻ TURN YOUR DEVICE SIDEWAYS<span>Mr Lee works best in landscape.</span></div></div>
+<div id="overlay">
+  <div id="card">
+    <div class="kicker">A RETRO 3D INDONESIAN ADVENTURE</div>
+    <div class="title">MR LEE<br>LOST HIS KEYS!</div>
+    <p class="story">Collect <b>NOL → SEPULUH</b> in the correct order, find the key and unlock the sports shed. Throw <span class="accent"><b>pink dodgeballs</b></span> at the Mini Mr Lees—or jump on them—but watch out for their fruit.</p>
+    <div class="controls"><span><kbd>W</kbd> <kbd>S</kbd> move</span><span><kbd>A</kbd> <kbd>D</kbd> turn</span><span><kbd>SHIFT</kbd> run</span><span><kbd>SPACE</kbd> throw</span><span><kbd>J</kbd> jump</span></div>
+    <p class="story"><span class="green"><b>Rary = MAX AURA.</b></span> Responsibility ricochets five dodgeballs, Respect turns fruit into confetti and starts a dance party, and Achiever gives speed + invincibility + a smashing aura.</p>
+    <button id="startBtn">START GAME</button>
+    <p class="small">Best played in landscape with sound on.</p>
+  </div>
+</div>
+<script type="module" src="game.js"></script>
+</body>
+</html>
