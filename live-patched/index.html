@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#07162e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Mr Lee Lost His Keys — Retro 3D</title>
+  <link rel="stylesheet" href="style.css?v=retro3d-4">
+
+<!-- iPad rapid-tap patch: gameplay unchanged -->
+<style id="mrlee-ipad-touch-patch">
+  html, body {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  canvas,
+  button,
+  [role="button"],
+  [data-key],
+  [data-action],
+  [class*="btn" i],
+  [class*="button" i],
+  [class*="touch" i],
+  [id*="touch" i] {
+    touch-action: manipulation !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+</style>
+<script id="mrlee-ipad-touch-patch-js">
+(() => {
+  const selector = 'canvas,button,[role="button"],[data-key],[data-action],[class*="btn" i],[class*="button" i],[class*="touch" i],[id*="touch" i]';
+  const apply = () => {
+    document.querySelectorAll(selector).forEach(el => {
+      el.style.touchAction = 'manipulation';
+      el.style.webkitUserSelect = 'none';
+      el.style.userSelect = 'none';
+      el.style.webkitTouchCallout = 'none';
+      el.style.webkitTapHighlightColor = 'transparent';
+    });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply, {once:true});
+  else apply();
+  new MutationObserver(apply).observe(document.documentElement, {childList:true, subtree:true});
+  document.addEventListener('dblclick', e => {
+    if (e.target && e.target.closest && e.target.closest(selector)) e.preventDefault();
+  }, {capture:true, passive:false});
+})();
+</script>
+</head>
+<body>
+  <main id="gameShell">
+    <canvas id="game" width="960" height="540" aria-label="Mr Lee Lost His Keys game"></canvas>
+    <section id="hud" aria-live="polite">
+      <div class="hudBox" id="numberHud"><span>ANGKA</span><strong>0 / 11</strong></div>
+      <div class="hudBox" id="keyHud"><span>KUNCI</span><strong>0 / 1</strong></div>
+      <div class="hudBox dodgeHud"><span class="ballIcon"></span><strong>DODGEBALLS ∞</strong></div>
+    </section>
+    <div id="levelTag">LEVEL 1 · SPORTS CLASS</div>
+    <div id="objectiveHud"><span>NEXT</span><strong>NOL (0)</strong><b id="objectiveArrow">▲</b></div>
+    <div id="message" role="status"></div>
+    <section id="statusBar">
+      <div class="energy"><span>ENERGI</span><div id="hearts">♥ ♥ ♥ ♥ ♥</div></div>
+      <div class="boosters">
+        <div class="boost responsibility" id="boostResponsibility"><b>◆</b><small>RESPONSIBILITY</small><i></i></div>
+        <div class="boost respect" id="boostRespect"><b>🤝</b><small>RESPECT</small><i></i></div>
+        <div class="boost achiever" id="boostAchiever"><b>★</b><small>ACHIEVER</small><i></i></div>
+      </div>
+      <div id="bossHud"><small id="bossName">MR LEE</small><div><i id="bossFill"></i></div></div>
+    </section>
+    <section id="touchControls" aria-label="Touch controls">
+      <div id="movePad" class="touchPad" aria-label="Move and turn"><div class="padRing"><i class="padArrow up">▲</i><i class="padArrow left">◀</i><i class="padArrow right">▶</i><i class="padArrow down">▼</i><div class="padKnob"></div></div></div>
+      <div id="lookPad" class="lookPad" aria-label="Drag to look"></div>
+      <button id="runButton" class="roundButton run" aria-label="Hold to run">»<small>RUN</small></button>
+      <button id="jumpButton" class="roundButton jump" aria-label="Jump">↑<small>JUMP</small></button>
+      <button id="throwButton" class="roundButton throw" aria-label="Throw dodgeball"><span>●</span><small>THROW</small></button>
+    </section>
+    <section id="startScreen" class="overlay visible">
+      <div class="card">
+        <div class="eyebrow">A RETRO 3D INDONESIAN ADVENTURE</div>
+        <h1>MR LEE LOST<br><em>HIS KEYS!</em></h1>
+        <p>Collect <b>NOL → SEPULUH</b> in the correct order, find the key and unlock the sports shed.</p>
+        <p class="warning">Throw pink dodgeballs at the Mini Mr Lees—or jump on them—but watch out for their fruit!</p>
+        <div class="desktopHelp">
+          <span><kbd>W S</kbd> move</span><span><kbd>A D</kbd> turn</span><span><kbd>SHIFT</kbd> run</span><span><kbd>SPACE</kbd> throw</span><span><kbd>J</kbd> jump</span>
+        </div>
+        <div class="touchHelp">Push up/down to move and left/right to turn. Hold RUN to sprint. Dodgeballs bounce.</div>
+        <button id="startButton">START GAME</button>
+        <small>Best played in landscape with sound on.</small>
+      </div>
+    </section>
+    <section id="panelScreen" class="overlay">
+      <div class="card smallCard">
+        <div class="eyebrow" id="panelEyebrow">LEVEL COMPLETE</div>
+        <h2 id="panelTitle">KEY FOUND!</h2>
+        <p id="panelText"></p>
+        <button id="panelButton">CONTINUE</button>
+      </div>
+    </section>
+    <div id="rotateScreen">↻<strong>TURN YOUR DEVICE SIDEWAYS</strong><small>Mr Lee’s adventure works best in landscape.</small></div>
+  </main>
+  <script src="game.js?v=retro3d-4"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a37ad3f25efce614',t:'MTc4ODgzNzczNw=='};var a=document.createElement('script');a.src='https://mr-lee-lost-keys-3d-test.awesomenoon.chatgpt.site/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

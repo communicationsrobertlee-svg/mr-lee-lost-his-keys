@@ -1,0 +1,1 @@
+Exact live game mirror with iPad rapid-tap/double-tap zoom prevention injected. No gameplay changes.
