@@ -37,8 +37,11 @@ jobs:
           origin = 'https://mr-lee-lost-keys-3d-test.awesomenoon.chatgpt.site'
           html = Path('/tmp/mrlee-live.html').read_text(errors='replace')
 
-          # Keep assets on the original public game host when the mirrored HTML
-          # contains root-relative links.
+          # Keep every original relative asset/script request pointed at the
+          # exact live game host, while serving only the patched HTML mirror.
+          if '<head>' in html.lower():
+              pos = html.lower().find('<head>') + len('<head>')
+              html = html[:pos] + f'\n  <base href="{origin}/">' + html[pos:]
           html = re.sub(r'((?:src|href)=["\'])/(?!/)', r'\1' + origin + '/', html, flags=re.I)
 
           patch = r'''
@@ -98,12 +101,13 @@ jobs:
           )
           PY
 
-      - name: Verify patch marker
+      - name: Verify patch and original asset base
         shell: bash
         run: |
           set -euo pipefail
           grep -q 'mrlee-ipad-touch-patch' live-patched/index.html
           grep -q 'touch-action: manipulation' live-patched/index.html
+          grep -q '<base href="https://mr-lee-lost-keys-3d-test.awesomenoon.chatgpt.site/">' live-patched/index.html
 
       - name: Commit mirrored patched game
         shell: bash
