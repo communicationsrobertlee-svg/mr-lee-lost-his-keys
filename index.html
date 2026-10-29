@@ -1,23 +1,1272 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#10291f">
-<title>Mr Lee Lost His Keys! — 2.5D</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Mr Lee Lost His Keys!</title>
+<meta name="theme-color" content="#111b2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<script>
+(()=>{
+  const ua=navigator.userAgent||"";
+  const ipad=/iPad/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+  const iphone=/iPhone|iPod/i.test(ua);
+  const android=/Android/i.test(ua);
+  const device=ipad?"ipad":iphone?"iphone":android?"android":"computer";
+  document.documentElement.dataset.device=device;
+  document.documentElement.dataset.input=(ipad||iphone||android)?"touch":"keyboard";
+})();
+</script>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10291f;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}canvas{position:fixed;inset:0;width:100%;height:100%;display:block;background:#78b9de}#hud{position:fixed;z-index:20;top:max(7px,env(safe-area-inset-top));left:max(7px,env(safe-area-inset-left));right:max(7px,env(safe-area-inset-right));display:flex;gap:5px;flex-wrap:wrap;pointer-events:none}.pill{padding:6px 9px;border-radius:999px;border:1px solid #ffffff35;background:#07111bd9;font-weight:950;font-size:11px;box-shadow:0 4px 14px #0006}#message{position:fixed;z-index:24;top:13%;left:50%;transform:translateX(-50%);max-width:min(720px,84vw);padding:9px 14px;border-radius:13px;background:#07111be8;border:2px solid #ffffff3e;font-weight:950;text-align:center;opacity:0;transition:.16s;pointer-events:none}#message.show{opacity:1}#bossWrap{display:none;position:fixed;z-index:25;top:64px;left:50%;transform:translateX(-50%);width:min(560px,75vw);text-align:center;font-weight:1000}#bossTrack{height:15px;border-radius:999px;background:#241a20;border:2px solid #ffffff70;overflow:hidden}#bossBar{height:100%;width:100%;background:linear-gradient(90deg,#ff5d62,#ffd052)}#overlay{position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 30%,#295b45,#10291f 55%,#07110d)}#card{width:min(760px,94vw);max-height:92vh;overflow:auto;padding:clamp(18px,3vw,34px);border-radius:24px;border:2px solid #ffffff2c;background:#0c1722e9;box-shadow:0 22px 80px #0009;text-align:center}.kicker{font-size:11px;letter-spacing:.17em;font-weight:1000;color:#ffd84d}h1{font-size:clamp(42px,8vw,82px);line-height:.83;margin:12px 0 18px;letter-spacing:-.055em;text-transform:uppercase;text-shadow:0 5px 0 #163c28}.story{font-size:clamp(14px,2vw,19px);line-height:1.35;color:#e9f4ee}.controls{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:18px 0}.controls span{border:1px solid #ffffff25;border-radius:9px;background:#ffffff0e;padding:7px 9px;font-size:12px;font-weight:850}kbd{background:#f1ecd9;color:#173426;border-radius:5px;padding:2px 5px;font-weight:950}#start{border:0;border-radius:15px;padding:14px 25px;background:#ffd84d;color:#112318;font-weight:1000;font-size:19px;box-shadow:0 6px 0 #9c8018}.small{font-size:12px;color:#bfd0c7}#touch{position:fixed;z-index:35;left:max(9px,env(safe-area-inset-left));right:max(9px,env(safe-area-inset-right));bottom:max(9px,env(safe-area-inset-bottom));display:none;justify-content:space-between;align-items:end;pointer-events:none}.cluster{display:grid;gap:7px;pointer-events:auto}.dpad{grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,58px)}.actions{grid-template-columns:repeat(2,72px);grid-template-rows:repeat(2,58px)}.btn{border:2px solid #ffffff58;background:#0b1722de;color:#fff;border-radius:15px;font-weight:1000;font-size:20px;display:grid;place-items:center;user-select:none;-webkit-user-select:none;box-shadow:0 4px 12px #0006}.btn[data-k=f]{grid-column:2}.btn[data-k=l]{grid-column:1;grid-row:2}.btn[data-k=b]{grid-column:2;grid-row:2}.btn[data-k=r]{grid-column:3;grid-row:2}.btn.run{background:#245c3c;font-size:15px}.btn.jump{background:#345087;font-size:14px}.btn.throw{background:#8c2d5c;grid-column:1/3;font-size:15px}.btn.on{filter:brightness(1.45);transform:scale(.96)}#rotate{display:none;position:fixed;z-index:90;inset:0;background:#07110d;place-items:center;text-align:center;font-size:24px;font-weight:1000;padding:30px}#rotate small{display:block;font-size:13px;color:#bfd0c7;margin-top:9px}@media(pointer:coarse),(max-width:900px){#touch{display:flex}.pill{font-size:9px;padding:5px 7px}#message{top:9%;font-size:12px;max-width:65vw}.controls{display:none}}@media(orientation:portrait) and (max-width:1100px){#rotate{display:grid}}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden;background:#111b2a;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+  #wrap{width:100%;height:var(--visual-h,100dvh);display:grid;place-items:center;overflow:hidden}
+  #shell{position:relative;overflow:hidden;background:#74d2fb}
+  canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+  #hud{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+  .pill{background:#111827ed;color:#fff;border:2px solid #ffffff22;border-radius:999px;padding:6px 10px;font-weight:900;font-size:13px}
+  #message{position:absolute;top:14%;left:50%;transform:translateX(-50%);max-width:90%;padding:13px 22px;border-radius:14px;border:3px solid #ffffff2a;background:#0b1220ef;color:#fff;text-align:center;font-weight:1000;font-size:clamp(20px,2.5vw,38px);opacity:0;transition:opacity .12s;pointer-events:none}
+  #overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:#07101ad9;color:white;text-align:center}
+  #card{width:min(900px,96%);max-height:94%;overflow:auto;background:#121b2afb;border:3px solid #ffffff28;border-radius:20px;padding:22px 28px;box-shadow:0 18px 50px #0008}
+  h1{margin:0 0 10px;font-size:clamp(34px,5vw,68px);line-height:.92}
+  p{margin:8px 0;font-size:clamp(14px,1.45vw,19px);line-height:1.4}
+  .controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:14px 0}
+  kbd{background:#fff;color:#111;border-radius:7px;padding:5px 9px;box-shadow:inset 0 -3px #bbb;font-weight:1000}
+  button{border:0;border-radius:12px;padding:12px 24px;background:#ffd84d;color:#172030;font-size:18px;font-weight:1000;cursor:pointer}
+  .small{opacity:.72;font-size:13px}
+  #touch{position:absolute;left:0;right:0;bottom:max(10px,env(safe-area-inset-bottom));display:none;justify-content:space-between;align-items:flex-end;padding:0 max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));pointer-events:none;z-index:15}
+  .group{display:flex;gap:10px;align-items:flex-end}
+  .touchBtn{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#111827dc;border:3px solid #ffffff88;color:#fff;font-size:30px;font-weight:1000;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 5px 0 #0007}
+  .touchBtn:active,.touchBtn.held{transform:translateY(3px);box-shadow:0 2px 0 #0007;background:#26364f}
+  .touchBtn.action{width:96px;height:76px;border-radius:24px;flex-direction:column;gap:0;font-size:24px;line-height:1}
+  .touchBtn.action small{font-size:12px;letter-spacing:.8px;margin-top:4px}
+  .touchBtn.fly{background:#174c77e8}
+  .touchBtn.fire{background:#d82f83ed;border-color:#ffd0e7}
+  html[data-input="touch"] body[data-game-running="true"] #touch{display:flex}
+  html[data-input="touch"] #keyboardControls{display:none}
+  html[data-input="keyboard"] #touchControlsIntro{display:none}
+  #deviceMode{font-weight:900;color:#ffd84d}
+  .phoneStory{display:none}
+  html[data-input="touch"] #message{top:6%;max-width:58%;padding:6px 10px;border-width:2px;border-radius:9px;font-size:clamp(12px,2.4vh,17px);line-height:1.08}
+  html[data-device="iphone"] .phoneStory{display:block}
+  html[data-device="iphone"] .fullStory{display:none}
+  #rotateOverlay{display:none;position:fixed;inset:0;z-index:9999;background:#0a1321f5;color:white;align-items:center;justify-content:center;text-align:center;padding:28px;font-weight:1000;font-size:30px;line-height:1.15}
+  #rotateOverlay span{display:block;margin-top:12px;font-size:16px;font-weight:700;opacity:.8}
+  html[data-device="ipad"] .touchBtn{width:88px;height:88px;font-size:34px}
+  html[data-device="ipad"] .touchBtn.action{width:112px;height:88px}
+  html[data-device="ipad"] .touchBtn.action small{font-size:14px}
+  @media(max-width:850px){
+    .pill{font-size:9px;padding:4px 6px}
+    #hud{gap:4px;top:5px;left:5px;right:5px}
+    .touchBtn{width:62px;height:62px;font-size:26px}
+    .touchBtn.action{width:82px;height:64px;border-radius:20px;font-size:20px}
+    .touchBtn.action small{font-size:10px}
+    #touch{padding-left:10px;padding-right:10px;bottom:8px}
+    .group{gap:7px}
+  }
+
+  /* Mobile/tablet: fill the actual visible browser viewport. JS updates --visual-h. */
+  html[data-input="touch"] #shell{
+    width:100%;
+    height:100%;
+    max-width:none;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+  @media(max-height:520px) and (orientation:landscape){
+    #overlay{padding:6px}
+    #card{width:min(820px,98%);max-height:98%;padding:9px 14px;border-width:2px;border-radius:14px}
+    #card h1{font-size:clamp(24px,6.2vh,38px);line-height:.9;margin-bottom:5px}
+    #card p{font-size:clamp(11px,2.8vh,14px);line-height:1.18;margin:4px 0}
+    #card .controls{margin:6px 0;gap:5px}
+    #card kbd{padding:3px 6px;border-radius:5px;font-size:11px}
+    #card button{padding:8px 18px;font-size:14px}
+    #card #deviceMode{display:none}
+    #card .small{font-size:10px}
+    #touch{bottom:max(5px,env(safe-area-inset-bottom));padding-left:max(7px,env(safe-area-inset-left));padding-right:max(7px,env(safe-area-inset-right))}
+    .touchBtn{width:54px;height:54px;font-size:24px;border-width:2px}
+    .touchBtn.action{width:72px;height:56px;border-radius:17px;font-size:18px}
+    .touchBtn.action small{font-size:9px;margin-top:2px}
+    .group{gap:5px}
+  }
+  html[data-device="iphone"] #card .phoneOptional{display:none}
+
+  @media(orientation:portrait) and (max-width:1100px){
+    html[data-input="touch"] #rotateOverlay{display:flex}
+  }
 </style>
 </head>
-<body>
-<canvas id="game"></canvas>
-<div id="hud"><div class="pill" id="level">LEVEL 1 · SPORTS CLASS</div><div class="pill" id="angka">ANGKA 0 / 11</div><div class="pill" id="key">KUNCI 0 / 1</div><div class="pill" id="next">NEXT NOL (0)</div><div class="pill" id="energy">ENERGI ♥ ♥ ♥ ♥ ♥</div><div class="pill" id="power">◆ RESPONSIBILITY · 🤝 RESPECT · ★ ACHIEVER</div></div>
+<body data-game-running="false">
+<div id="wrap"><div id="shell">
+<canvas id="game" width="1280" height="720"></canvas>
+
+<div id="hud">
+  <div class="pill" id="levelPill">LEVEL 1 — SATU</div>
+  <div class="pill" id="stagePill">SPORTS CLASS</div>
+  <div class="pill" id="nextPill">NEXT: NOL (0)</div>
+  <div class="pill" id="keyPill">🔑 KEY: LOCKED</div>
+  <div class="pill" id="ballPill">💗 PINK DODGEBALLS: READY</div>
+  <div class="pill" id="raryPill" style="display:none">🦁 RARY — MAX AURA</div>
+  <div class="pill" id="powerPill" style="display:none"></div>
+  <div class="pill" id="bossPill" style="display:none"></div>
+</div>
+
 <div id="message"></div>
-<div id="bossWrap"><div id="bossName">MR LEE</div><div id="bossTrack"><div id="bossBar"></div></div></div>
-<div id="touch"><div class="cluster dpad"><div class="btn" data-k="f">▲</div><div class="btn" data-k="l">↶</div><div class="btn" data-k="b">▼</div><div class="btn" data-k="r">↷</div></div><div class="cluster actions"><div class="btn run" data-k="run">RUN</div><div class="btn jump" data-k="jump">JUMP</div><div class="btn throw" data-k="throw">● THROW</div></div></div>
-<div id="rotate">↻ TURN YOUR DEVICE SIDEWAYS<small>Mr Lee works best in landscape.</small></div>
-<div id="overlay"><div id="card"><div class="kicker">THE 2.5D CLASSROOM BUILD</div><h1>MR LEE<br>LOST HIS KEYS!</h1><p class="story">Collect <b>NOL → SEPULUH</b> in order, find the key and unlock the sports shed. Throw <b>pink dodgeballs</b> at the Mini Mr Lees—or jump on them—while they throw healthy food.</p><div class="controls"><span><kbd>W</kbd>/<kbd>S</kbd> move</span><span><kbd>A</kbd>/<kbd>D</kbd> turn</span><span><kbd>SHIFT</kbd> run</span><span><kbd>J</kbd> jump</span><span><kbd>SPACE</kbd> throw</span></div><p class="story"><b>RARY = MAX AURA.</b> Responsibility fires five ricocheting balls. Respect turns fruit to confetti and starts a dance party. Achiever adds speed, invincibility and a smashing aura.</p><button id="start">START GAME</button><p class="small">Australian-school chaos. Best played in landscape with sound on.</p></div></div>
-<script src="sprite25d.js?v=2"></script>
-<script src="game25d.js?v=2"></script>
+
+<div id="touch" aria-label="Touch game controls">
+  <div class="group">
+    <div class="touchBtn" data-key="ArrowLeft" aria-label="Move left">←</div>
+    <div class="touchBtn" data-key="ArrowRight" aria-label="Move right">→</div>
+  </div>
+  <div class="group">
+    <div class="touchBtn action fly" data-key="Space" aria-label="Fly"><b>↑</b><small>FLY</small></div>
+    <div class="touchBtn action fire" data-key="KeyF" aria-label="Throw dodgeball"><b>●</b><small>THROW</small></div>
+  </div>
+</div>
+
+<div id="overlay"><div id="card">
+  <h1>MR LEE LOST<br>HIS KEYS!</h1>
+
+  <p class="fullStory"><b>Mr Lee has lost his mind and his keys somewhere around Marangaroo.</b>
+  Search the school, collect the Indonesian numbers <b>NOL → SEPULUH</b> in the correct order,
+  find the key, and reach the exit so the sports shed can be opened for a week of Indonesian and sport.</p>
+  <p class="phoneStory"><b>Mr Lee lost his mind and his keys!</b> Collect <b>NOL → SEPULUH</b> in order, find the key and escape.</p>
+
+  <p class="phoneOptional"><b>Watch out for Mr Lee's mind — it's scattered little Mini Mr Lees everywhere!</b></p>
+
+  <div class="controls" id="keyboardControls">
+    <span><kbd>←</kbd> <kbd>→</kbd> move</span>
+    <span><kbd>SPACE</kbd> jump / fly</span>
+    <span><kbd>F</kbd> throw pink dodgeball</span>
+    <span><kbd>R</kbd> restart</span>
+  </div>
+  <div class="controls" id="touchControlsIntro">
+    <span><kbd>←</kbd> <kbd>→</kbd> move</span>
+    <span><kbd>FLY</kbd> hold to jetpack</span>
+    <span><kbd>THROW</kbd> pink dodgeball</span>
+  </div>
+  <p class="small" id="deviceMode"></p>
+
+  <p class="small phoneOptional">Collect the Indonesian numbers in order. You can throw <b>pink dodgeballs</b> at Mr Lee from the start.</p>
+
+  <button id="startBtn">START GAME</button>
+</div></div>
+</div></div>
+<div id="rotateOverlay">↻ TURN YOUR DEVICE SIDEWAYS<span>Mr Lee works best in landscape mode.</span></div>
+
+<script>
+(()=>{
+"use strict";
+
+const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
+const shell=document.getElementById("shell");
+const overlay=document.getElementById("overlay"), startBtn=document.getElementById("startBtn"), messageEl=document.getElementById("message");
+const levelPill=document.getElementById("levelPill"), stagePill=document.getElementById("stagePill"), nextPill=document.getElementById("nextPill");
+const keyPill=document.getElementById("keyPill"), ballPill=document.getElementById("ballPill"), raryPill=document.getElementById("raryPill"), powerPill=document.getElementById("powerPill"), bossPill=document.getElementById("bossPill");
+const deviceMode=document.getElementById("deviceMode");
+const DEVICE=document.documentElement.dataset.device||"computer";
+if(deviceMode)deviceMode.textContent=DEVICE==="ipad"?"iPad mode — touch controls enabled":DEVICE==="iphone"?"iPhone mode — landscape touch controls":DEVICE==="android"?"Android mode — landscape touch controls":"Computer mode — keyboard controls";
+
+function visibleViewport(){
+  const vv=window.visualViewport;
+  return {w:Math.max(320,Math.round(vv?vv.width:window.innerWidth)),h:Math.max(180,Math.round(vv?vv.height:window.innerHeight))};
+}
+const initialViewport=visibleViewport();
+const H=720;
+const mobileAspect=Math.max(1.25,Math.min(2.35,initialViewport.w/initialViewport.h));
+const W=document.documentElement.dataset.input==="touch"?Math.round(H*mobileAspect):1280;
+canvas.width=W;canvas.height=H;
+const GROUND=640,GRAV=1850;
+
+function fitVisibleScreen(){
+  const {w,h}=visibleViewport();
+  document.documentElement.style.setProperty("--visual-h",h+"px");
+  if(document.documentElement.dataset.input==="touch"){
+    shell.style.width=w+"px";
+    shell.style.height=h+"px";
+  }else{
+    const aspect=W/H;
+    let sw=Math.min(w-16,1280), sh=sw/aspect;
+    if(sh>h-16){sh=h-16;sw=sh*aspect}
+    shell.style.width=Math.max(320,sw)+"px";
+    shell.style.height=Math.max(180,sh)+"px";
+    shell.style.border="4px solid #0c1420";
+    shell.style.borderRadius="14px";
+  }
+}
+fitVisibleScreen();
+window.addEventListener("resize",fitVisibleScreen,{passive:true});
+window.addEventListener("orientationchange",()=>setTimeout(()=>location.reload(),120),{passive:true});
+if(window.visualViewport){
+  visualViewport.addEventListener("resize",fitVisibleScreen,{passive:true});
+  visualViewport.addEventListener("scroll",fitVisibleScreen,{passive:true});
+}
+const WORDS=[["nol",0],["satu",1],["dua",2],["tiga",3],["empat",4],["lima",5],["enam",6],["tujuh",7],["delapan",8],["sembilan",9],["sepuluh",10]];
+const LEVEL_WORDS=["","satu","dua","tiga","empat","lima","enam","tujuh","delapan","sembilan","sepuluh"];
+const STAGES=[
+ null,
+ {name:"SPORTS CLASS",theme:"class",world:2700,enemies:1,gaps:0,fire:5.5},
+ {name:"RUNNING CLUB",theme:"running",world:3000,enemies:2,gaps:0,fire:5.0},
+ {name:"AFTER SCHOOL NETBALL",theme:"netball",world:3300,enemies:3,gaps:1,fire:4.6},
+ {name:"AFTER SCHOOL BASKETBALL",theme:"basketball",world:3600,enemies:4,gaps:1,fire:4.2},
+ {name:"MULTICULTURAL NETBALL CARNIVAL",theme:"multi",world:3950,enemies:5,gaps:2,fire:3.8,boss:"medium"},
+ {name:"LONG JUMP & LONG THROWS",theme:"jumps",world:4250,enemies:6,gaps:2,fire:3.5},
+ {name:"CROSS COUNTRY",theme:"cross",world:4550,enemies:7,gaps:3,fire:3.2},
+ {name:"FACTION CARNIVAL",theme:"faction",world:4800,enemies:8,gaps:3,fire:3.0},
+ {name:"INTERSCHOOL ATHLETICS CARNIVAL",theme:"interschool",world:5100,enemies:9,gaps:4,fire:2.7},
+ {name:"UNDERCOVER AREA / SPORTS SHED",theme:"shed",world:5400,enemies:10,gaps:4,fire:2.4,boss:"final"}
+];
+
+const FOOD={
+ broccoli:{label:"BROCCOLI",r:14},
+ carrot:{label:"CARROT",r:13},
+ apple:{label:"APPLE",r:13},
+ banana:{label:"BANANA",r:15},
+ peas:{label:"PEAS",r:12}
+};
+
+const keys={};
+let running=false,last=0,time=0,level=1,expected=0,deaths=0,cameraX=0,worldWidth=3050;
+let messageTimer=0,levelTransition=false,keySpawned=false,hasKey=false,raryUsed=false,raryCelebrationUntil=0;
+let platforms=[],wordPickups=[],decoyPickups=[],enemies=[],shots=[],foods=[],particles=[],bonuses=[],bossPowerups=[];
+let keyPickup=null,exitDoor=null,raryPickup=null,boss=null,bossIndex=-1,bossQueue=[],bossBin=null,bossPowerSpawnAt=0,autoBurstAt=0,enamTujuhBurstAt=0;
+let bossCheckpointMode=false,bossCheckpointIndex=0;
+
+
+const player={x:80,y:520,w:38,h:54,vx:0,vy:0,facing:1,onGround:false,invulnUntil:0,responsibilityUntil:0,danceUntil:0,enamTujuhUntil:0,ridingRary:false,ignoreHitsUntil:0,bossPowerUntil:0};
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function rand(a,b){return a+Math.random()*(b-a)}
+function rects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function roundRect(c,x,y,w,h,r,fill=true,stroke=false){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();if(fill)c.fill();if(stroke)c.stroke()}
+function active(t){return time<t}
+function achOn(){return active(player.invulnUntil)}
+function respOn(){return active(player.responsibilityUntil)}
+function danceOn(){return active(player.danceUntil)}
+function handsOn(){return active(player.enamTujuhUntil)}
+function say(text,secs=1.2){messageEl.innerHTML=text;messageEl.style.opacity="1";messageTimer=secs}
+
+let gameAudioCtx=null;
+function unlockGameAudio(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return Promise.resolve(false);
+    if(!gameAudioCtx)gameAudioCtx=new AC();
+    if(gameAudioCtx.state==="suspended")gameAudioCtx.resume().catch(()=>{});
+    return Promise.resolve(true);
+  }catch(e){return Promise.resolve(false)}
+}
+function playPickupBoop(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return;
+    if(!gameAudioCtx)gameAudioCtx=new AC();
+    if(gameAudioCtx.state==="suspended")gameAudioCtx.resume().catch(()=>{});
+    const now=gameAudioCtx.currentTime;
+    const gain=gameAudioCtx.createGain();
+    const low=gameAudioCtx.createOscillator();
+    const high=gameAudioCtx.createOscillator();
+    low.type="sine"; high.type="sine";
+    low.frequency.setValueAtTime(330,now);
+    low.frequency.exponentialRampToValueAtTime(440,now+.075);
+    high.frequency.setValueAtTime(660,now+.035);
+    high.frequency.exponentialRampToValueAtTime(880,now+.13);
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(.22,now+.008);
+    gain.gain.exponentialRampToValueAtTime(.09,now+.075);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+.19);
+    low.connect(gain);high.connect(gain);gain.connect(gameAudioCtx.destination);
+    low.start(now);high.start(now+.035);low.stop(now+.2);high.stop(now+.2);
+  }catch(e){}
+}
+function speakIndonesianNumber(){playPickupBoop();}
+
+function updateHUD(){
+  levelPill.textContent=`LEVEL ${level} — ${LEVEL_WORDS[level].toUpperCase()}`;
+  stagePill.textContent=STAGES[level].name;
+  nextPill.textContent=expected<=10?`NEXT: ${WORDS[expected][0].toUpperCase()} (${expected})`:"NUMBERS COMPLETE";
+  keyPill.textContent=bossCheckpointMode?"⚔️ BOSS CHECKPOINT: SEPULUH":!keySpawned?"🔑 KEY: LOCKED":hasKey?"🔑 KEY: FOUND":"🔑 KEY: FIND IT!";
+  ballPill.textContent="💗 PINK DODGEBALLS: READY";
+  raryPill.style.display=player.ridingRary?"":"none";
+  const buffs=[];
+  if(handsOn())buffs.push(`🙌 ENAM TUJUH ${Math.ceil(player.enamTujuhUntil-time)}s`);
+  if(achOn())buffs.push(`⭐ ACHIEVERS ${Math.ceil(player.invulnUntil-time)}s`);
+  if(respOn())buffs.push(`🎯 RESPONSIBILITY ${Math.ceil(player.responsibilityUntil-time)}s`);
+  if(danceOn())buffs.push(`🕺 RESPECT ${Math.ceil(player.danceUntil-time)}s`);
+  powerPill.style.display=buffs.length?"":"none";powerPill.textContent=buffs.join(" • ");
+  if(boss&&boss.alive){bossPill.style.display="";bossPill.textContent=`💪 ${boss.name.toUpperCase()} ${Math.max(0,boss.hp)}/${boss.maxHp} HP`}
+  else bossPill.style.display="none";
+}
+
+function makePlatforms(stage){
+  platforms=[];
+  if(stage.gaps===0)platforms.push({x:0,y:GROUND,w:worldWidth,h:100,kind:"ground"});
+  else{
+    let cursor=0;const usable=worldWidth-1500,spacing=usable/stage.gaps;
+    for(let i=0;i<stage.gaps;i++){
+      const gx=850+i*spacing+(i%2)*80,gw=70+level*9+(i%3)*16;
+      if(gx>cursor)platforms.push({x:cursor,y:GROUND,w:gx-cursor,h:100,kind:"ground"});
+      cursor=gx+gw;
+    }
+    platforms.push({x:cursor,y:GROUND,w:worldWidth-cursor,h:100,kind:"ground"});
+  }
+  const raised=level===1?3:4+level;
+  for(let i=0;i<raised;i++){
+    const x=430+i*(worldWidth-1100)/raised+(i%2)*38;
+    const y=[520,455,390,500][i%4]-(level>6&&i%3===0?35:0);
+    platforms.push({x,y,w:150+(i%3)*36,h:22,kind:"platform"});
+  }
+}
+
+function safeSpots(count){
+  const candidates=[];
+  for(const p of platforms){
+    if(p.w<120)continue;
+    const margin=45,usable=Math.max(1,p.w-margin*2),n=Math.max(1,Math.floor(usable/180));
+    for(let i=0;i<n;i++){
+      const x=p.x+margin+(i+.5)*usable/n;
+      if(x<220||x>worldWidth-430)continue;
+      candidates.push({x,y:p.y-48});
+    }
+  }
+  shuffle(candidates);return candidates.slice(0,count);
+}
+
+function paddedRect(o,pad=22){
+  return {x:o.x-pad,y:o.y-pad,w:o.w+pad*2,h:o.h+pad*2};
+}
+function overlapsAny(candidate,items,pad=22){
+  const c=paddedRect(candidate,pad);
+  return items.some(item=>rects(c,paddedRect(item,0)));
+}
+function surfaceYForX(x){
+  let best=null,bestDist=Infinity;
+  for(const p of platforms){
+    if(p.w<100)continue;
+    const left=p.x+55,right=p.x+p.w-55;
+    if(x>=left&&x<=right)return {x,y:p.y-48};
+    const cx=clamp(x,left,right),d=Math.abs(cx-x);
+    if(d<bestDist){bestDist=d;best={x:cx,y:p.y-48}}
+  }
+  return best||{x,y:GROUND-48};
+}
+function buildWords(){
+  wordPickups=[];
+  decoyPickups=[];
+
+  const start=330,end=worldWidth-560;
+  const heights=level===1
+    ? [545,535,520,500,475,445,410,370,325,275,225]
+    : [535,410,255,500,335,205,455,285,525,350,230];
+  let slots=[];
+  for(let i=0;i<WORDS.length;i++)slots.push(start+(end-start)*(i/(WORDS.length-1)));
+
+  // Levels 1-7: real number cards are spatially in exact order.
+  // Levels 8-10: the real number cards are spatially mixed.
+  if(level>=8)shuffle(slots);
+
+  for(let i=0;i<WORDS.length;i++){
+    wordPickups.push({
+      x:clamp(slots[i]-52,230,worldWidth-500),
+      y:heights[(i+level*2)%heights.length],
+      w:104,h:40,word:WORDS[i][0],num:WORDS[i][1],collected:false,decoy:false
+    });
+  }
+
+  // ENAM + TUJUH are the combo pair: always directly beside each other.
+  // On Levels 8-10 the pair may move as a unit, but the two cards stay together.
+  const enamCard=wordPickups.find(p=>p.num===6);
+  const tujuhCard=wordPickups.find(p=>p.num===7);
+  if(enamCard&&tujuhCard){
+    const pairX=level<=7?clamp(enamCard.x,300,worldWidth-780):clamp(rand(720,worldWidth-980),320,worldWidth-780);
+    const pairY=[225,315,405,500][(level+1)%4];
+    enamCard.x=pairX;enamCard.y=pairY;
+    tujuhCard.x=pairX+116;tujuhCard.y=pairY;
+  }
+
+  // Wrong-answer decoys: clearly red, with some <= roughly half-card overlap.
+  const decoyCount=[0,1,1,2,2,3,3,4,0,3,5][level];
+  for(let i=0;i<decoyCount;i++){
+    const source=wordPickups[Math.floor(Math.random()*wordPickups.length)];
+    let num=Math.floor(Math.random()*11);
+    if(num===source.num)num=(num+1+Math.floor(Math.random()*9))%11;
+    let candidate=null;
+    for(let tries=0;tries<80;tries++){
+      let x,y;
+      if(Math.random()<.58){
+        const side=Math.random()<.5?-1:1;
+        x=source.x+side*rand(55,96);
+        y=source.y+(Math.random()<.5?-1:1)*rand(22,58);
+      }else{
+        x=rand(300,worldWidth-560);
+        y=[200,260,320,390,455,535][Math.floor(rand(0,6))];
+      }
+      const c={x:clamp(x,220,worldWidth-500),y:clamp(y,185,565),w:104,h:40};
+      if(!decoyPickups.some(d=>rects(paddedRect(c,16),paddedRect(d,0)))){candidate=c;break}
+    }
+    if(!candidate)candidate={x:430+i*145,y:205+(i%4)*82,w:104,h:40};
+    decoyPickups.push({...candidate,word:WORDS[num][0],num,collected:false,decoy:true});
+  }
+}
+
+function buildBonuses(){
+  const occupied=[...wordPickups,...decoyPickups];
+  const candidates=safeSpots(80);
+  const defs=[
+    ["ACHIEVERS","⭐","#7ffcff"],
+    ["RESPONSIBILITY","🎯","#ffae52"],
+    ["RESPECT","🕺","#d98cff"]
+  ];
+  bonuses=[];
+  for(let i=0;i<defs.length;i++){
+    let placed=null;
+    for(const spot of candidates){
+      const candidate={x:spot.x-72,y:spot.y-6,w:144,h:42};
+      if(candidate.x<300||candidate.x>worldWidth-500)continue;
+      if(!overlapsAny(candidate,occupied,34)){
+        placed={...candidate,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
+        break;
+      }
+    }
+    if(!placed){
+      const x=550+i*((worldWidth-1300)/3);
+      placed={x,y:330+(i%2)*100,w:144,h:42,name:defs[i][0],icon:defs[i][1],color:defs[i][2],collected:false};
+    }
+    bonuses.push(placed);
+    occupied.push(placed);
+  }
+
+  let raryPlaced=null;
+  for(const spot of candidates){
+    const candidate={x:spot.x-62,y:spot.y-10,w:124,h:50};
+    if(candidate.x<500||candidate.x>worldWidth-600)continue;
+    if(!overlapsAny(candidate,occupied,48)){raryPlaced=candidate;break}
+  }
+  if(!raryPlaced)raryPlaced={x:worldWidth*.62,y:320,w:124,h:50};
+  raryPickup={...raryPlaced,collected:false};
+}
+
+function makeEnemies(stage){
+  enemies=[];
+  const enemyCount=level;
+  for(let i=0;i<enemyCount;i++){
+    const x=780+i*(worldWidth-1500)/Math.max(1,enemyCount-1)+rand(-65,65);
+    enemies.push({x,y:GROUND-56,w:46,h:56,alive:true,state:"walk",stateUntil:0,vx:(i%2?1:-1)*(level===1?26:30+level*4),baseX:x,range:level===1?60:75+level*8,fireCooldown:rand(1,stage.fire+1),flexCooldown:level===1?rand(4.0,6.0):rand(2.7,5.0),speechCooldown:level===1?rand(4.0,7.0):rand(2.8,6.5),speechText:"",speechUntil:0});
+  }
+}
+
+function initLevel(n){
+  for(const k of Object.keys(keys))keys[k]=false;
+  level=n;expected=0;worldWidth=STAGES[level].world;cameraX=0;levelTransition=false;bossCheckpointMode=false;bossCheckpointIndex=0;
+  keySpawned=false;hasKey=false;keyPickup=null;boss=null;bossIndex=-1;bossQueue=[];
+  shots=[];foods=[];particles=[];bonuses=[];decoyPickups=[];bossPowerups=[];bossBin=null;bossPowerSpawnAt=0;autoBurstAt=0;enamTujuhBurstAt=0;raryUsed=false;raryCelebrationUntil=0;
+  player.x=80;player.y=520;player.vx=0;player.vy=0;player.facing=1;player.onGround=false;player.invulnUntil=0;player.responsibilityUntil=0;player.danceUntil=0;player.enamTujuhUntil=0;player.ridingRary=false;player.ignoreHitsUntil=time+.8;player.bossPowerUntil=0;
+  makePlatforms(STAGES[level]);buildWords();buildBonuses();makeEnemies(STAGES[level]);
+  exitDoor={x:worldWidth-220,y:GROUND-130,w:130,h:130,open:false};
+  say(
+    level===1
+      ? `SPORTS CLASS — TUTORIAL<br><span style="font-size:.55em">Move with ← → • hold SPACE to fly • collect NOL first • press F to throw.</span>`
+      : `LEVEL ${level}: ${STAGES[level].name}<br><span style="font-size:.55em">${level<=7?"Numbers are in spatial order — look UP and fly!":"NUMBERS ARE MIXED — know which Indonesian word comes next!"}</span>`,
+    level===1?3.2:2
+  );
+  updateHUD();
+}
+
+
+function initLevel10BossCheckpoint(resumeBossIndex){
+  for(const k of Object.keys(keys))keys[k]=false;
+
+  level=10;
+  worldWidth=STAGES[10].world;
+  levelTransition=false;
+  bossCheckpointMode=true;
+  bossCheckpointIndex=Math.max(0,Math.min(3,resumeBossIndex));
+
+  expected=10; // NOL through SEMBILAN are already complete.
+  keySpawned=true;
+  hasKey=true;
+  keyPickup=null;
+  boss=null;
+  bossIndex=-1;
+  bossQueue=[];
+  bossBin=null;
+  bossPowerups=[];
+  shots=[];
+  foods=[];
+  particles=[];
+  decoyPickups=[];
+  bonuses=[];
+  enemies=[];
+  raryPickup=null;
+  raryUsed=false;
+  raryCelebrationUntil=0;
+  bossPowerSpawnAt=0;
+  autoBurstAt=0;
+  enamTujuhBurstAt=0;
+
+  player.invulnUntil=0;
+  player.responsibilityUntil=0;
+  player.danceUntil=0;
+  player.enamTujuhUntil=0;
+  player.bossPowerUntil=0;
+  player.ridingRary=false;
+  player.ignoreHitsUntil=time+1.2;
+  player.vx=0;
+  player.vy=0;
+  player.facing=1;
+  player.onGround=false;
+
+  makePlatforms(STAGES[10]);
+
+  // Only SEPULUH must be recollected before the boss restarts.
+  wordPickups=WORDS.map((w,i)=>({
+    x:0,y:0,w:104,h:40,word:w[0],num:w[1],collected:i<10,decoy:false
+  }));
+  const sepuluh=wordPickups[10];
+  sepuluh.x=worldWidth-1450;
+  sepuluh.y=335;
+  sepuluh.collected=false;
+
+  exitDoor={x:worldWidth-220,y:GROUND-130,w:130,h:130,open:false};
+
+  player.x=worldWidth-1650;
+  player.y=GROUND-player.h;
+  cameraX=clamp(player.x-W*.34,0,worldWidth-W);
+
+  say(
+    `BOSS CHECKPOINT!<br><span style="font-size:.55em">Just collect SEPULUH again — then ${["SMALL","MEDIUM","LARGE","MEGA EVOLUTION"][bossCheckpointIndex]} MR LEE returns!</span>`,
+    2.3
+  );
+  updateHUD();
+}
+
+function particlesAt(x,y,count=14,color="#ffd84d"){
+  for(let i=0;i<count;i++){const a=rand(0,Math.PI*2),s=rand(50,240);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.3,.8),size:rand(3,8),color})}
+}
+
+function death(reason,force=true){
+  if(levelTransition)return;
+  if(!force&&(achOn()||time<player.ignoreHitsUntil))return;
+  if(!force&&player.ridingRary){
+    player.ridingRary=false;raryUsed=true;player.ignoreHitsUntil=time+1.4;
+    say(`🦁 RARY SAVED YOU!<br><span style="font-size:.55em">RARY runs away. MAX AURA!</span>`,1.6);
+    particlesAt(player.x,player.y,28,"#f5c44d");return;
+  }
+  deaths++;running=false;levelTransition=true;
+  say(`${reason}<br><span style="font-size:.72em">Sampai Jumpa... Mr Lee wins!</span>`,1.75);
+
+  const restartLevel=level;
+  const useBossCheckpoint=level===10&&hasKey&&(bossIndex>=0||bossCheckpointMode);
+  const resumeBossIndex=bossCheckpointMode?bossCheckpointIndex:Math.max(0,bossIndex);
+
+  setTimeout(()=>{
+    if(!levelTransition)return;
+    if(useBossCheckpoint){
+      initLevel10BossCheckpoint(resumeBossIndex);
+    }else{
+      initLevel(restartLevel);
+    }
+    running=true;
+    last=performance.now();
+    requestAnimationFrame(loop);
+  },1450);
+}
+
+function hitByFood(f){death(`You were hit by <b>${FOOD[f.kind].label}</b>!`,false)}
+
+function collectWord(p){
+  if(p.collected)return;
+
+  if(p.num!==expected){
+    const needed=expected<=10?WORDS[expected][0].toUpperCase():"THE KEY";
+    death(`Wrong number! You collected <b>${p.word.toUpperCase()}</b> instead of <b>${needed}</b>.`,true);
+    return;
+  }
+
+  p.collected=true;
+  expected++;
+  particlesAt(p.x+p.w/2,p.y+p.h/2,20);
+
+  // Every correct pickup gets a satisfying confirmation boop.
+  speakIndonesianNumber(p.word);
+
+  if(p.num===7){
+    player.enamTujuhUntil=time+20;
+    enamTujuhBurstAt=0;
+    say(`<b>${p.word.toUpperCase()}!</b><br><span style="font-size:.56em">🙌⚡ ENAM TUJUH! 20 SEC SUPER SPEED + AUTOMATIC 360° DODGEBALL FIRE!</span>`,2);
+  }else if(level===1&&p.num===0){
+    say(`<b>NOL!</b><br><span style="font-size:.55em">GOOD! NEXT IS SATU →</span>`,1.3);
+  }else if(level===1&&p.num===2){
+    say(`<b>DUA!</b><br><span style="font-size:.55em">NOW TRY FLYING HIGHER WITH SPACE.</span>`,1.35);
+  }else if(level===1&&p.num===4){
+    say(`<b>EMPAT!</b><br><span style="font-size:.55em">PRESS F TO THROW A PINK DODGEBALL AT MINI MR LEE.</span>`,1.5);
+  }else{
+    say(`<b>${p.word.toUpperCase()}!</b><br><span style="font-size:.55em">${p.num}</span>`,.8);
+  }
+
+  if(expected===11){
+    if(level===10&&bossCheckpointMode){
+      bossCheckpointMode=false;
+      say(`<b>SEPULUH!</b><br><span style="font-size:.55em">MR LEE IS BACK — FIGHT!</span>`,1.2);
+      setTimeout(()=>{if(running&&!levelTransition)startBossSequence(bossCheckpointIndex)},650);
+    }else{
+      spawnKey();
+    }
+  }
+}
+
+function spawnKey(){
+  keySpawned=true;
+  // The number quiz is finished. Remove wrong-answer cards so they cannot
+  // trigger an invalid "next number" after SEPULUH while the player hunts for the key.
+  decoyPickups=[];
+  const occupied=[
+    ...bonuses.filter(b=>!b.collected),
+    ...(raryPickup&&!raryPickup.collected&&!raryUsed?[raryPickup]:[])
+  ];
+  const spots=safeSpots(80);
+  let placed=null;
+  for(const spot of spots){
+    const candidate={x:spot.x-24,y:spot.y-4,w:48,h:38};
+    if(candidate.x<280||candidate.x>worldWidth-440)continue;
+    if(!overlapsAny(candidate,occupied,45)){placed=candidate;break}
+  }
+  if(!placed)placed={x:worldWidth*.52,y:320,w:48,h:38};
+  keyPickup={...placed,collected:false};
+  say(`🔑 ALL NUMBERS COMPLETE!<br><span style="font-size:.55em">THE KEY HAS APPEARED SOMEWHERE IN THE LEVEL!</span>`,1.9);
+}
+
+function collectKey(){
+  if(!keyPickup||keyPickup.collected)return;
+  keyPickup.collected=true;hasKey=true;particlesAt(keyPickup.x+24,keyPickup.y+18,30,"#ffe55d");
+  if(STAGES[level].boss){say(`🔑 KEY FOUND!<br><span style="font-size:.55em">MR LEE IS BLOCKING THE EXIT!</span>`,1.7);startBossSequence()}
+  else{say(`🔑 KEY FOUND!<br><span style="font-size:.55em">GET TO THE EXIT!</span>`,1.4);exitDoor.open=true}
+}
+
+function collectBonus(b){
+  if(b.collected)return;b.collected=true;particlesAt(b.x+b.w/2,b.y+b.h/2,26,b.color);
+  if(b.name==="ACHIEVERS"){player.invulnUntil=time+15;say(`⭐ ACHIEVERS!<br><span style="font-size:.5em">YOU IMPROVED IN CLASS — 15 SECONDS INVULNERABILITY!</span>`,1.8)}
+  else if(b.name==="RESPONSIBILITY"){player.responsibilityUntil=time+20;say(`🎯 RESPONSIBILITY!<br><span style="font-size:.5em">YOU HELPED PACK AWAY THE SPORTS EQUIPMENT — MULTI-DIRECTION SHOOTING!</span>`,1.8)}
+  else{player.danceUntil=time+10;say(`🕺 RESPECT!<br><span style="font-size:.5em">YOU USED YOUR MANNERS — DANCE MODE!</span>`,1.8)}
+}
+
+function collectRary(){
+  if(raryPickup.collected||raryUsed)return;
+  raryPickup.collected=true;
+  player.ridingRary=true;
+  player.ignoreHitsUntil=time+2.2;
+  raryCelebrationUntil=time+3.2;
+  particlesAt(player.x+20,player.y+20,70,"#ffd84d");
+  particlesAt(player.x+20,player.y+20,55,"#fff2a1");
+  say(`🦁⚡ RARY! RARY! ⚡🦁<br><span style="font-size:.72em">RARY THE LION IS MAX AURA!</span><br><span style="font-size:.48em">EXTRA HIT • FASTER MOVEMENT • YOU ARE AWESOME</span>`,3.2);
+}
+
+function shootOne(angle){
+  const speed=760;
+  shots.push({
+    x:player.x+player.w/2,
+    y:player.y+player.h/2,
+    vx:Math.cos(angle)*speed,
+    vy:Math.sin(angle)*speed,
+    r:10,
+    damage:1,
+    life:1.8
+  });
+}
+
+function shoot(){
+  const base=player.facing>0?0:Math.PI;
+  if(respOn()){
+    [-.55,-.27,0,.27,.55].forEach(a=>shootOne(base+(player.facing>0?a:-a)));
+  }else{
+    shootOne(base);
+  }
+}
+
+function chooseFood(){const foods=["broccoli","carrot","apple","banana","peas"];return foods[Math.floor(Math.random()*foods.length)]}
+function throwFood(source,kind=null,spread=0,speedBonus=0){
+  kind=kind||chooseFood();const sx=source.x+source.w/2,sy=source.y+20,tx=player.x+player.w/2,ty=player.y+player.h/2;
+  const angle=Math.atan2(ty-sy,tx-sx)+spread,speed=170+level*12+speedBonus;
+  foods.push({x:sx,y:sy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-20,r:FOOD[kind].r,kind,life:5});
+}
+
+const MR_LEE_SHOUTS=["Halo!","Apa kabar?","Selamat pagi!","Selamat siang!","Selamat sore!","Terima kasih!","Sampai jumpa!","Nol!","Satu!","Dua!","Tiga!","Empat!","Lima!","Enam!","Tujuh!","Delapan!","Sembilan!","Sepuluh!","ENAM TUJUH!"];
+function randomMrLeeShout(){return MR_LEE_SHOUTS[Math.floor(Math.random()*MR_LEE_SHOUTS.length)]}
+function bossTemplate(name,hp,size,speed,fire,shotsPerAttack,foodSpeed){return{name,hp,maxHp:hp,w:size,h:size*1.18,x:worldWidth-690,y:GROUND-size*1.18,alive:true,vx:speed,baseX:worldWidth-690,range:300,fireCooldown:.8,fireRate:fire,flexCooldown:rand(2.2,4.1),flexUntil:0,speechCooldown:rand(2.4,5.2),speechText:"",speechUntil:0,shotsPerAttack,foodSpeed}}
+function spawnBossPowerCluster(){
+  if(!boss||!boss.alive)return;
+  const arenaStart=worldWidth-1300,arenaEnd=worldWidth-320;
+  const ys=[190,275,355,445,525];
+  const types=["ENAMTUJUH","RARY","ACHIEVERS","RESPONSIBILITY","RESPECT"];
+  const copies=(level===10&&bossIndex>=2)?2:1;
+  for(const type of types){
+    for(let c=0;c<copies;c++){
+      bossPowerups.push({type,x:rand(arenaStart,arenaEnd),y:ys[Math.floor(rand(0,ys.length))],w:type==="ENAMTUJUH"?168:148,h:44,collected:false,expiresAt:time+24+rand(0,6)});
+    }
+  }
+  bossPowerSpawnAt=time+(level===10&&bossIndex>=2?5.5:7.0);
+}
+
+function collectBossPower(p){
+  if(p.collected)return;
+  p.collected=true;
+  particlesAt(p.x+p.w/2,p.y+p.h/2,34,p.type==="RARY"?"#ffd84d":"#fff06a");
+  if(p.type==="ENAMTUJUH"){
+    player.enamTujuhUntil=time+20;player.bossPowerUntil=time+20;enamTujuhBurstAt=0;autoBurstAt=0;
+    say(`🙌⚡ ENAM TUJUH! ⚡🙌<br><span style="font-size:.52em">20 SECONDS: SUPER SPEED + AUTOMATIC 360° dodgeball FIRE!</span>`,2);
+  }else if(p.type==="RARY"){
+    player.ridingRary=true;raryUsed=false;player.ignoreHitsUntil=time+1.5;raryCelebrationUntil=time+2.4;
+    say(`🦁 RARY RETURNS!<br><span style="font-size:.58em">MAX AURA — EXTRA HIT!</span>`,1.6);
+  }else if(p.type==="ACHIEVERS"){
+    player.invulnUntil=Math.max(player.invulnUntil,time+15);say(`⭐ ACHIEVERS — INVULNERABLE!`,1.0);
+  }else if(p.type==="RESPONSIBILITY"){
+    player.responsibilityUntil=Math.max(player.responsibilityUntil,time+20);say(`🎯 RESPONSIBILITY — MULTI-SHOT!`,1.0);
+  }else{
+    player.danceUntil=Math.max(player.danceUntil,time+10);say(`🕺 RESPECT — DANCE MODE!`,1.0);
+  }
+}
+
+function updateBossPowerups(){
+  bossPowerups=bossPowerups.filter(p=>!p.collected&&time<p.expiresAt);
+  for(const p of bossPowerups)if(rects(player,p))collectBossPower(p);
+  if(boss&&boss.alive&&time>=bossPowerSpawnAt)spawnBossPowerCluster();
+  // ENAM TUJUH automatic fire is handled globally so normal and boss pickups behave identically.
+}
+
+function startBossSequence(resumeIndex=0){
+  enemies.forEach(e=>e.alive=false);foods=[];
+  if(level===5){
+    bossQueue=[()=>bossTemplate("Medium Mr Lee",50,92,54,1.65,1,10)];
+    bossIndex=-1;
+  }else{
+    bossQueue=[
+      ()=>bossTemplate("Small Mr Lee",10,58,46,1.85,1,5),
+      ()=>bossTemplate("Medium Mr Lee",50,92,58,1.60,1,12),
+      ()=>bossTemplate("Large Mr Lee",100,138,68,1.35,2,20),
+      ()=>bossTemplate("MEGA EVOLUTION MR LEE",200,205,78,1.05,3,28)
+    ];
+    bossIndex=Math.max(0,Math.min(3,resumeIndex))-1;
+  }
+  spawnNextBoss();
+}
+
+function spawnNextBoss(){
+  bossIndex++;
+  if(bossIndex>=bossQueue.length){boss=null;exitDoor.open=true;say(`🏆 MR LEE DEFEATED!<br><span style="font-size:.55em">THE EXIT IS OPEN!</span>`,2);return}
+  boss=bossQueue[bossIndex]();bossPowerups=[];bossPowerSpawnAt=time+.35;
+  const subtitles=level===10?["10 HP — EASY.","50 HP — NOW HE'S ANGRY.","100 HP — HE'S GETTING HUGE.","200 HP — ROBOT MUSCLE MEGA EVOLUTION!"]:["50 HP — MEDIUM MR LEE!"];
+  say(`💪 ${boss.name.toUpperCase()}!<br><span style="font-size:.55em">${subtitles[bossIndex]} POWER-UPS INCOMING!</span>`,2);
+}
+
+function bossHit(dmg){
+  if(!boss||!boss.alive)return;
+  boss.hp-=dmg;boss.flexUntil=time+.45;particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,8,"#ffb64d");
+  if(boss.hp<=0){
+    boss.alive=false;
+    bossBin={x:boss.x,y:GROUND-Math.min(135,boss.h*.55),w:Math.max(62,boss.w*.72),h:Math.min(135,boss.h*.55),until:time+1.1};
+    particlesAt(boss.x+boss.w/2,boss.y+boss.h/2,60,"#ffe45d");
+    say(`🗑️ ${boss.name.toUpperCase()} IS NOW A BIN!`,1.0);
+    setTimeout(()=>{if(running&&!levelTransition)spawnNextBoss()},900);
+  }
+}
+
+function completeLevel(){
+  if(levelTransition||!hasKey||!exitDoor.open)return;
+  levelTransition=true;running=false;
+  if(level<10){say(`✅ LEVEL ${level} COMPLETE!<br><span style="font-size:.55em">${STAGES[level+1].name} IS NEXT.</span>`,1.6);setTimeout(()=>{initLevel(level+1);running=true;last=performance.now();requestAnimationFrame(loop)},1300)}
+  else{
+    overlay.style.display="flex";
+    document.getElementById("card").innerHTML=`<h1>🏆 SPORTS SHED OPEN!</h1><p>You searched all over Marangaroo, collected <b>NOL → SEPULUH</b>, recovered the keys, survived the healthy-food attacks, rode Rary, and defeated the <b>ROBOT MUSCLE MEGA EVOLUTION MR LEE</b>.</p><p>Marangaroo is ready for a week of <b>Indonesian and sport</b>.</p><p><b>Total deaths:</b> ${deaths}</p><button id="againBtn">PLAY AGAIN</button>`;
+    document.getElementById("againBtn").onclick=()=>{overlay.style.display="none";deaths=0;time=0;initLevel(1);running=true;last=performance.now();requestAnimationFrame(loop)};
+  }
+}
+
+function resolvePlatforms(dt){
+  player.onGround=false;const prevBottom=player.y+player.h-player.vy*dt;
+  for(const p of platforms){if(player.x+player.w<=p.x||player.x>=p.x+p.w)continue;if(player.vy>=0&&prevBottom<=p.y+8&&player.y+player.h>=p.y){player.y=p.y-player.h;player.vy=0;player.onGround=true}}
+}
+
+function updateEnemies(dt,prevY){
+  const stage=STAGES[level];
+  for(const e of enemies){
+    if(!e.alive)continue;
+    if(e.state==="deadbin"||e.state==="broccoli")continue;
+    if(e.state==="bin"){
+      if(time>=e.stateUntil){e.state="flex";e.stateUntil=time+.9;e.y=GROUND-e.h;e.speechText="Aku kembali!";e.speechUntil=time+1.1;say(`💪 MR LEE IS BACK!`,.5)}
+      else continue;
+    }
+
+    e.speechCooldown-=dt;
+    if(e.speechCooldown<=0){e.speechText=randomMrLeeShout();e.speechUntil=time+1.45;e.speechCooldown=rand(3.0,6.8)}
+
+    if(e.state==="flex"){
+      if(time>=e.stateUntil)e.state="walk";
+    }else{
+      e.x+=e.vx*dt;if(e.x<e.baseX-e.range||e.x>e.baseX+e.range)e.vx*=-1;
+      e.fireCooldown-=dt;e.flexCooldown-=dt;
+      if(e.flexCooldown<=0){e.state="flex";e.stateUntil=time+rand(.55,.9);e.flexCooldown=rand(2.8,5.2)}
+      else if(e.fireCooldown<=0&&Math.abs(e.x-player.x)<820){throwFood(e);e.fireCooldown=stage.fire+rand(0,.55)}
+    }
+
+    if(rects(player,e)){
+      const stomp=player.vy>0&&prevY+player.h<=e.y+18;
+      if(stomp){e.state="broccoli";e.stateUntil=Infinity;player.y=e.y-player.h-3;player.vy=-430;particlesAt(e.x+e.w/2,e.y+e.h/2,28,"#58b957");say(`🥦 STOMP! MR LEE IS NOW BROCCOLI!<br><span style="font-size:.55em">HE IS STAYING LIKE THAT.</span>`,1.15)}
+      else death(`Mr Lee caught you!`,false);
+    }
+  }
+}
+
+function updateBoss(dt,prevY){
+  if(!boss||!boss.alive)return;
+  boss.x+=boss.vx*dt;if(boss.x<boss.baseX-boss.range||boss.x>boss.baseX+boss.range)boss.vx*=-1;
+  boss.fireCooldown-=dt;boss.flexCooldown-=dt;boss.speechCooldown-=dt;
+  if(boss.speechCooldown<=0){boss.speechText=randomMrLeeShout();boss.speechUntil=time+1.5;boss.speechCooldown=rand(2.5,5.6)}
+  if(boss.flexCooldown<=0){boss.flexUntil=time+.72;boss.flexCooldown=rand(2.4,4.4)}
+  if(boss.fireCooldown<=0){const count=boss.shotsPerAttack;for(let i=0;i<count;i++){const spread=(i-(count-1)/2)*.17;throwFood(boss,chooseFood(),spread,boss.foodSpeed)}boss.fireCooldown=boss.fireRate}
+  if(rects(player,boss)){
+    const stomp=player.vy>0&&prevY+player.h<=boss.y+25;
+    if(stomp){player.y=boss.y-player.h-3;player.vy=-520;boss.flexUntil=time+.7;bossHit(10);say(`💪 STOMP! ${boss.name.toUpperCase()} FLEXES!`,.5)}
+    else death(`${boss.name} caught you!`,false);
+  }
+}
+
+function update(dt){
+  time+=dt;if(messageTimer>0){messageTimer-=dt;if(messageTimer<=0)messageEl.style.opacity="0"}
+  const prevY=player.y;let dir=0;if(keys.ArrowLeft||keys.KeyA)dir--;if(keys.ArrowRight||keys.KeyD)dir++;
+  const enamSpeed=handsOn()?1.65:1;
+  const speed=(325+Math.min(level*5,40))*(player.ridingRary?1.28:1)*enamSpeed,accel=(player.ridingRary?3150:2500)*(handsOn()?1.45:1);
+  if(dir){player.vx+=dir*accel*dt;player.facing=dir}else player.vx*=Math.pow(.002,dt);
+  player.vx=clamp(player.vx,-speed,speed);
+  if(keys.Space){player.vy-=2450*dt;player.vy=Math.max(player.vy,-540)}
+  player.vy+=GRAV*dt;player.x+=player.vx*dt;player.x=clamp(player.x,0,worldWidth-player.w);player.y+=player.vy*dt;resolvePlatforms(dt);
+  if(player.y>H+180)death(`You fell off the course!`,true);
+
+  for(const p of wordPickups)if(!p.collected&&rects(player,p))collectWord(p);
+  if(expected<WORDS.length){
+    for(const d of decoyPickups){
+      if(!d.collected&&rects(player,d)){
+        const needed=WORDS[expected]?.[0]||"the next number";
+        death(`Wrong answer! You touched <b>${d.word.toUpperCase()}</b> but need <b>${needed.toUpperCase()}</b>.`,true);
+        break;
+      }
+    }
+  }
+  for(const b of bonuses)if(!b.collected&&rects(player,b))collectBonus(b);
+  if(raryPickup&&!raryPickup.collected&&!raryUsed&&rects(player,raryPickup))collectRary();
+  if(keyPickup&&!keyPickup.collected&&rects(player,keyPickup))collectKey();
+
+  if(handsOn()&&time>=enamTujuhBurstAt){
+    for(let i=0;i<12;i++)shootOne(i*Math.PI*2/12);
+    enamTujuhBurstAt=time+.42;
+  }
+
+  updateEnemies(dt,prevY);updateBoss(dt,prevY);updateBossPowerups();
+
+  for(const s of shots){
+    s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;const sb={x:s.x-s.r,y:s.y-s.r,w:s.r*2,h:s.r*2};
+    if(boss&&boss.alive&&rects(sb,boss)){s.life=0;bossHit(1);continue}
+    for(const e of enemies){if(!e.alive||e.state==="bin"||e.state==="deadbin"||e.state==="broccoli")continue;if(rects(sb,e)){e.state="deadbin";e.stateUntil=Infinity;s.life=0;particlesAt(e.x+e.w/2,e.y+e.h/2,30,"#aeb8c2");say(`🏐 dodgeball! MR LEE IS NOW A BIN!`,.72);break}}
+  }
+  shots=shots.filter(s=>s.life>0&&s.x>-100&&s.x<worldWidth+100&&s.y>-100&&s.y<H+120);
+
+  for(const f of foods){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=260*dt;f.life-=dt;const fb={x:f.x-f.r,y:f.y-f.r,w:f.r*2,h:f.r*2};if(rects(fb,player)){f.life=0;hitByFood(f)}}
+  foods=foods.filter(f=>f.life>0&&f.y<H+130);
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=480*dt;p.life-=dt}
+  particles=particles.filter(p=>p.life>0);
+  if(hasKey&&exitDoor.open&&rects(player,exitDoor))completeLevel();
+  cameraX+=(clamp(player.x-W*.34,0,worldWidth-W)-cameraX)*Math.min(1,dt*6);updateHUD();
+}
+
+function drawSky(){
+  const colors=[null,["#75d6ff","#dff8ff"],["#6ccdf8","#e5fbff"],["#74d2ff","#e8fbff"],["#83d7ff","#fff1c5"],["#67c5ff","#ffe0a7"],["#86c9ff","#f3f9ff"],["#79c8e8","#ddf0ce"],["#6dbfe8","#ffd7a1"],["#5ba7df","#f8d49e"],["#6c7da7","#dbd4c3"]][level];
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,colors[0]);g.addColorStop(1,colors[1]);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+
+function drawTheme(){
+  const theme=STAGES[level].theme;if(theme!=="basketball"&&theme!=="shed"){ctx.fillStyle="#69b956";ctx.fillRect(0,500,W,140)}ctx.save();
+  if(theme==="class"){ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("SPORTS CLASS",460,295);for(let i=0;i<7;i++){ctx.fillStyle=i%2?"#f7c948":"#ef664f";ctx.beginPath();ctx.moveTo(90+i*180,520);ctx.lineTo(110+i*180,470);ctx.lineTo(130+i*180,520);ctx.closePath();ctx.fill()}ctx.fillStyle="#4a77c7";ctx.fillRect(330,550,150,14);ctx.fillStyle="#e65252";ctx.fillRect(760,550,160,14)}
+  else if(theme==="running"){ctx.fillStyle="#c95b45";ctx.fillRect(0,505,W,135);ctx.strokeStyle="#fff";ctx.lineWidth=4;for(let y=522;y<640;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("RUNNING CLUB",500,300)}
+  else if(theme==="netball"){ctx.strokeStyle="#fff";ctx.lineWidth=5;ctx.strokeRect(100,505,1080,120);ctx.beginPath();ctx.arc(640,565,35,0,Math.PI*2);ctx.stroke();for(const x of [170,1110]){ctx.fillStyle="#ddd";ctx.fillRect(x,340,5,170);ctx.strokeStyle="#fff";ctx.beginPath();ctx.arc(x+2,360,34,0,Math.PI*2);ctx.stroke()}ctx.fillStyle="#fff";ctx.font="1000 27px system-ui";ctx.fillText("AFTER SCHOOL NETBALL",405,300)}
+  else if(theme==="basketball"){ctx.fillStyle="#ca7a3e";ctx.fillRect(0,490,W,150);ctx.strokeStyle="#fff";ctx.lineWidth=4;ctx.strokeRect(80,510,1120,115);ctx.beginPath();ctx.arc(640,568,45,0,Math.PI*2);ctx.stroke();for(const x of [145,1130]){ctx.fillStyle="#333";ctx.fillRect(x,340,7,170);ctx.strokeStyle="#fff";ctx.strokeRect(x-38,350,80,52)}ctx.fillStyle="#fff";ctx.font="1000 27px system-ui";ctx.fillText("AFTER SCHOOL BASKETBALL",380,300)}
+  else if(theme==="multi"){ctx.fillStyle="#fff";ctx.font="1000 26px system-ui";ctx.fillText("MULTICULTURAL NETBALL CARNIVAL",325,285);const cs=["#e53935","#f5cf3b","#2fae55","#2d72d2","#8e4bc6"];for(let i=0;i<7;i++){const x=60+i*180;ctx.fillStyle=cs[i%cs.length];ctx.beginPath();ctx.moveTo(x,455);ctx.lineTo(x+65,385);ctx.lineTo(x+130,455);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x+18,455,94,48)}ctx.strokeStyle="#fff";ctx.lineWidth=4;for(const x of [180,1090]){ctx.fillRect(x,330,4,170);ctx.beginPath();ctx.arc(x+2,350,31,0,Math.PI*2);ctx.stroke()}}
+  else if(theme==="jumps"){ctx.fillStyle="#fff";ctx.font="1000 29px system-ui";ctx.fillText("LONG JUMP & LONG THROWS",380,290);ctx.fillStyle="#e9d08b";ctx.fillRect(700,530,400,80);ctx.fillStyle="#c85b44";ctx.fillRect(0,570,650,70);ctx.strokeStyle="#fff";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(80,604);ctx.lineTo(650,604);ctx.stroke();ctx.fillStyle="#d9d9d9";ctx.beginPath();ctx.arc(250,470,22,0,Math.PI*2);ctx.fill()}
+  else if(theme==="cross"){ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("CROSS COUNTRY",490,285);for(let i=0;i<9;i++){const x=60+i*155;ctx.fillStyle="#6a4327";ctx.fillRect(x,365,18,150);ctx.fillStyle=i%2?"#338d44":"#2f7d38";ctx.beginPath();ctx.arc(x+9,350,55,0,Math.PI*2);ctx.fill()}ctx.fillStyle="#c9a469";ctx.fillRect(0,555,W,85)}
+  else if(theme==="faction"){ctx.fillStyle="#fff";ctx.font="1000 30px system-ui";ctx.fillText("FACTION CARNIVAL",465,285);const faction=["#e53935","#f4d03f","#2eaf52"];for(let i=0;i<8;i++){const x=i*170;ctx.fillStyle=faction[i%3];ctx.beginPath();ctx.moveTo(x,455);ctx.lineTo(x+60,385);ctx.lineTo(x+120,455);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x+15,455,90,48)}}
+  else if(theme==="interschool"){ctx.fillStyle="#c85a43";ctx.fillRect(0,510,W,130);ctx.strokeStyle="#fff";ctx.lineWidth=3;for(let y=525;y<640;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.fillStyle="#d7d7d7";for(let i=0;i<12;i++)ctx.fillRect(i*110,370+(i%2)*8,85,34);ctx.fillStyle="#fff";ctx.font="1000 25px system-ui";ctx.fillText("INTERSCHOOL ATHLETICS CARNIVAL",330,300)}
+  else if(theme==="shed"){ctx.fillStyle="#b9b6ad";ctx.fillRect(0,0,W,500);ctx.fillStyle="#777";for(let x=0;x<W;x+=130)ctx.fillRect(x,0,7,500);ctx.fillStyle="#3e4852";ctx.fillRect(0,500,W,140);ctx.fillStyle="#fff";ctx.font="1000 29px system-ui";ctx.fillText("UNDERCOVER AREA / SPORTS SHED",330,285);ctx.fillStyle="#8a8f94";ctx.fillRect(80,365,230,130);ctx.fillStyle="#32373c";ctx.fillRect(120,400,150,95)}
+  ctx.restore();
+}
+
+function drawPlatforms(){for(const p of platforms){const x=p.x-cameraX;if(x+p.w<0||x>W)continue;if(p.kind==="ground"){ctx.fillStyle=STAGES[level].theme==="shed"?"#555d66":"#45a94b";ctx.fillRect(x,p.y,p.w,14);ctx.fillStyle=STAGES[level].theme==="shed"?"#353b42":"#86542a";ctx.fillRect(x,p.y+14,p.w,p.h-14)}else{ctx.fillStyle="#c87834";ctx.fillRect(x,p.y,p.w,p.h);ctx.strokeStyle="#754015";ctx.lineWidth=3;ctx.strokeRect(x,p.y,p.w,p.h)}}}
+function drawWord(p){if(p.collected)return;const x=p.x-cameraX;if(x+p.w<0||x>W)return;const pulse=1+Math.sin(time*5+p.x)*.035;ctx.save();ctx.translate(x+p.w/2,p.y+p.h/2);ctx.scale(pulse,pulse);ctx.fillStyle="#ffd84d";ctx.strokeStyle="#202733";ctx.lineWidth=4;roundRect(ctx,-p.w/2,-p.h/2,p.w,p.h,9,true,true);ctx.fillStyle="#172030";ctx.textAlign="center";ctx.font="1000 16px system-ui";ctx.fillText(p.word.toUpperCase(),0,-1);ctx.font="900 11px system-ui";ctx.fillText(String(p.num),0,14);ctx.restore()}
+function drawDecoy(d){
+  if(d.collected)return;const x=d.x-cameraX;if(x+d.w<0||x>W)return;
+  const pulse=1+Math.sin(time*6+d.x)*.025;ctx.save();ctx.translate(x+d.w/2,d.y+d.h/2);ctx.scale(pulse,pulse);
+  ctx.fillStyle="#ff7474";ctx.strokeStyle="#7d1f29";ctx.lineWidth=4;roundRect(ctx,-d.w/2,-d.h/2,d.w,d.h,9,true,true);
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 16px system-ui";ctx.fillText(d.word.toUpperCase(),0,-1);ctx.font="900 10px system-ui";ctx.fillText("DECOY",0,14);ctx.restore();
+}
+function drawBossPowerups(){
+  const styles={RARY:["#efb739","#5e3b11","🦁 RARY"],ACHIEVERS:["#7ffcff","#1d6170","⭐ ACHIEVERS"],RESPONSIBILITY:["#ffae52","#783c12","🎯 RESPONSIBILITY"],RESPECT:["#d98cff","#63306f","🕺 RESPECT"]};
+  for(const p of bossPowerups){
+    const x=p.x-cameraX;if(x+p.w<0||x>W)continue;
+    ctx.save();
+    if(p.type==="ENAMTUJUH"){
+      ctx.shadowColor="#ffe34e";ctx.shadowBlur=16+Math.sin(time*8+p.x)*5;
+      ctx.fillStyle="#ffe34e";ctx.strokeStyle="#5f4900";ctx.lineWidth=4;
+      roundRect(ctx,x,p.y,78,p.h,10,true,true);
+      roundRect(ctx,x+84,p.y,80,p.h,10,true,true);
+      ctx.shadowBlur=0;ctx.fillStyle="#141923";ctx.textAlign="center";ctx.font="1000 12px system-ui";
+      ctx.fillText("ENAM",x+39,p.y+27);ctx.fillText("TUJUH",x+124,p.y+27);
+    }else{
+      const st=styles[p.type];ctx.shadowColor=st[0];ctx.shadowBlur=14+Math.sin(time*8+p.x)*5;ctx.fillStyle=st[0];ctx.strokeStyle=st[1];ctx.lineWidth=4;roundRect(ctx,x,p.y,p.w,p.h,10,true,true);ctx.shadowBlur=0;ctx.fillStyle="#141923";ctx.textAlign="center";ctx.font="1000 13px system-ui";ctx.fillText(st[2],x+p.w/2,p.y+27);
+    }
+    ctx.restore();
+  }
+}
+function drawBossBin(){if(!bossBin||time>bossBin.until)return;const x=bossBin.x-cameraX,y=bossBin.y;ctx.fillStyle="#4d5660";ctx.fillRect(x,y,bossBin.w,bossBin.h);ctx.fillStyle="#252b31";ctx.fillRect(x-7,y-12,bossBin.w+14,14);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 12px system-ui";ctx.fillText("MR LEE BIN",x+bossBin.w/2,y+bossBin.h*.58)}
+function drawSpeechBubble(x,y,text,maxW=170){
+  if(!text)return;ctx.save();ctx.font="1000 13px system-ui";const tw=Math.min(maxW,ctx.measureText(text).width+24),bx=x-tw/2,by=y-42;ctx.fillStyle="#fff";ctx.strokeStyle="#202733";ctx.lineWidth=3;roundRect(ctx,bx,by,tw,30,9,true,true);ctx.beginPath();ctx.moveTo(x-7,by+29);ctx.lineTo(x,by+39);ctx.lineTo(x+7,by+29);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle="#172030";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(text,x,by+15);ctx.restore();
+}
+function drawBonus(b){if(b.collected)return;const x=b.x-cameraX;if(x+b.w<0||x>W)return;ctx.fillStyle=b.color;ctx.strokeStyle="#202733";ctx.lineWidth=4;roundRect(ctx,x,b.y,b.w,b.h,9,true,true);ctx.fillStyle="#131a24";ctx.textAlign="center";ctx.font="1000 13px system-ui";ctx.fillText(`${b.icon} ${b.name}`,x+b.w/2,b.y+26)}
+function drawRaryPickup(){
+  if(!raryPickup||raryPickup.collected||raryUsed)return;
+  const x=raryPickup.x-cameraX;
+  if(x+raryPickup.w<0||x>W)return;
+  ctx.save();
+  ctx.shadowColor="#ffd84d";
+  ctx.shadowBlur=22+Math.sin(time*7)*6;
+  ctx.fillStyle="#efb739";
+  ctx.strokeStyle="#fff1a0";
+  ctx.lineWidth=5;
+  roundRect(ctx,x,raryPickup.y,raryPickup.w,raryPickup.h,14,true,true);
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#2c1e10";
+  ctx.textAlign="center";
+  ctx.font="1000 18px system-ui";
+  ctx.fillText("🦁 RARY",x+raryPickup.w/2,raryPickup.y+31);
+  ctx.restore();
+}
+function drawKey(){if(!keyPickup||keyPickup.collected)return;const x=keyPickup.x-cameraX,y=keyPickup.y;ctx.save();ctx.translate(x+24,y+19);ctx.rotate(Math.sin(time*4)*.12);ctx.strokeStyle="#7b5b00";ctx.lineWidth=7;ctx.beginPath();ctx.arc(-7,0,10,0,Math.PI*2);ctx.moveTo(3,0);ctx.lineTo(25,0);ctx.lineTo(25,8);ctx.moveTo(16,0);ctx.lineTo(16,7);ctx.stroke();ctx.strokeStyle="#ffe24e";ctx.lineWidth=4;ctx.beginPath();ctx.arc(-7,0,10,0,Math.PI*2);ctx.stroke();ctx.restore();ctx.fillStyle="#111";ctx.textAlign="center";ctx.font="1000 12px system-ui";ctx.fillText("KEY",x+24,y-7)}
+function drawExit(){const x=exitDoor.x-cameraX,y=exitDoor.y;if(x+exitDoor.w<0||x>W)return;ctx.fillStyle="#dad4c6";ctx.fillRect(x,y,exitDoor.w,exitDoor.h);ctx.strokeStyle="#343a42";ctx.lineWidth=5;ctx.strokeRect(x,y,exitDoor.w,exitDoor.h);ctx.fillStyle=exitDoor.open?"#4dbf61":"#4d5661";ctx.fillRect(x+18,y+36,exitDoor.w-36,exitDoor.h-36);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 15px system-ui";ctx.fillText(level===10?"SPORTS SHED":"EXIT",x+exitDoor.w/2,y+23);ctx.font="1000 25px system-ui";ctx.fillText(exitDoor.open?"OPEN":"🔒",x+exitDoor.w/2,y+86)}
+
+function drawMrLee(e){
+  if(!e.alive)return;const x=e.x-cameraX;if(x+e.w<0||x>W)return;
+  if(e.state==="broccoli"){
+    const y=GROUND-47;
+    ctx.save();
+    ctx.fillStyle="#2e8d40";
+    ctx.beginPath();
+    ctx.arc(x+e.w*.5,y+15,15,0,Math.PI*2);
+    ctx.arc(x+e.w*.25,y+20,13,0,Math.PI*2);
+    ctx.arc(x+e.w*.75,y+20,13,0,Math.PI*2);
+    ctx.arc(x+e.w*.38,y+5,14,0,Math.PI*2);
+    ctx.arc(x+e.w*.63,y+5,14,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle="#7fc45f";
+    ctx.fillRect(x+e.w*.43,y+24,e.w*.14,23);
+    ctx.fillStyle="#fff";
+    ctx.textAlign="center";
+    ctx.font="1000 9px system-ui";
+    ctx.fillText("MR LEE",x+e.w/2,y-7);
+    ctx.fillText("BROCCOLI",x+e.w/2,y+61);
+    ctx.restore();
+    return;
+  }
+  if(e.state==="bin"||e.state==="deadbin"){
+    const permanent=e.state==="deadbin";ctx.fillStyle=permanent?"#4f5962":"#66707a";ctx.fillRect(x+3,GROUND-42,e.w-6,42);ctx.fillStyle="#343a40";ctx.fillRect(x-3,GROUND-49,e.w+6,10);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 9px system-ui";ctx.fillText(permanent?"MR LEE BIN":"TRASH",x+e.w/2,GROUND-16);return;
+  }
+  const flex=e.state==="flex";ctx.save();ctx.fillStyle="#7a4d2b";roundRect(ctx,x,e.y,e.w,e.h,8,true,false);ctx.fillStyle="#40240f";ctx.fillRect(x+5,e.y+5,e.w-10,8);ctx.fillStyle="#fff";ctx.fillRect(x+8,e.y+17,10,10);ctx.fillRect(x+28,e.y+17,10,10);ctx.fillStyle="#111";ctx.fillRect(x+12,e.y+20,4,4);ctx.fillRect(x+32,e.y+20,4,4);ctx.fillStyle="#f0d0a9";ctx.fillRect(x+10,e.y+33,26,10);ctx.strokeStyle="#7a4d2b";ctx.lineWidth=8;
+  if(flex){ctx.beginPath();ctx.moveTo(x+5,e.y+35);ctx.lineTo(x-11,e.y+24);ctx.lineTo(x-18,e.y+36);ctx.moveTo(x+41,e.y+35);ctx.lineTo(x+57,e.y+24);ctx.lineTo(x+64,e.y+36);ctx.stroke();ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="1000 11px system-ui";ctx.fillText("FLEX!",x+23,e.y-9)}ctx.restore();
+  if(time<e.speechUntil)drawSpeechBubble(x+e.w/2,e.y,e.speechText);
+}
+
+function drawBoss(){
+  if(!boss||!boss.alive)return;
+  const x=boss.x-cameraX,y=boss.y;
+  if(x+boss.w<0||x>W)return;
+  const flex=time<boss.flexUntil;
+  const mega=boss.name.includes("MEGA");
+
+  ctx.save();
+
+  if(mega){
+    // MEGA EVOLUTION MR LEE: huge robot body + absurd mechanical muscles.
+    ctx.shadowColor="#73e8ff";
+    ctx.shadowBlur=26;
+
+    // Robot torso.
+    ctx.fillStyle="#7d8b98";
+    roundRect(ctx,x+boss.w*.17,y+boss.h*.18,boss.w*.66,boss.h*.67,18,true,false);
+    ctx.fillStyle="#3d4954";
+    ctx.fillRect(x+boss.w*.26,y+boss.h*.30,boss.w*.48,boss.h*.22);
+
+    // Metallic head.
+    ctx.fillStyle="#9ba8b3";
+    roundRect(ctx,x+boss.w*.27,y,boss.w*.46,boss.h*.27,15,true,false);
+    ctx.fillStyle="#27323b";
+    ctx.fillRect(x+boss.w*.34,y+boss.h*.075,boss.w*.32,boss.h*.075);
+
+    // Glowing red robot eyes.
+    ctx.shadowColor="#ff3131";
+    ctx.shadowBlur=18;
+    ctx.fillStyle="#ff3131";
+    ctx.fillRect(x+boss.w*.35,y+boss.h*.09,boss.w*.09,boss.h*.045);
+    ctx.fillRect(x+boss.w*.56,y+boss.h*.09,boss.w*.09,boss.h*.045);
+    ctx.shadowBlur=0;
+
+    // Giant mechanical biceps and forearms.
+    const armY=y+boss.h*.38;
+    ctx.fillStyle="#aeb9c2";
+    ctx.beginPath();
+    ctx.ellipse(x+boss.w*.10,armY,boss.w*.18,boss.h*.16,-.18,0,Math.PI*2);
+    ctx.ellipse(x+boss.w*.90,armY,boss.w*.18,boss.h*.16,.18,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#667480";
+    ctx.beginPath();
+    ctx.ellipse(x-boss.w*.02,y+boss.h*.55,boss.w*.12,boss.h*.19,-.25,0,Math.PI*2);
+    ctx.ellipse(x+boss.w*1.02,y+boss.h*.55,boss.w*.12,boss.h*.19,.25,0,Math.PI*2);
+    ctx.fill();
+
+    // Robot abs / muscle plating.
+    ctx.fillStyle="#c0c8ce";
+    for(let row=0;row<3;row++){
+      ctx.fillRect(x+boss.w*.30,y+boss.h*(.52+row*.10),boss.w*.17,boss.h*.07);
+      ctx.fillRect(x+boss.w*.53,y+boss.h*(.52+row*.10),boss.w*.17,boss.h*.07);
+    }
+
+    // Chest reactor.
+    ctx.shadowColor="#6ff6ff";
+    ctx.shadowBlur=20;
+    ctx.fillStyle="#6ff6ff";
+    ctx.beginPath();
+    ctx.arc(x+boss.w/2,y+boss.h*.40,boss.w*.07,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    if(flex){
+      // Arms lift even wider when robot Mr Lee flexes.
+      ctx.strokeStyle="#c7d0d7";
+      ctx.lineWidth=Math.max(16,boss.w*.10);
+      ctx.beginPath();
+      ctx.moveTo(x+boss.w*.17,y+boss.h*.44);
+      ctx.lineTo(x-boss.w*.14,y+boss.h*.20);
+      ctx.lineTo(x-boss.w*.23,y+boss.h*.38);
+      ctx.moveTo(x+boss.w*.83,y+boss.h*.44);
+      ctx.lineTo(x+boss.w*1.14,y+boss.h*.20);
+      ctx.lineTo(x+boss.w*1.23,y+boss.h*.38);
+      ctx.stroke();
+
+      ctx.fillStyle="#fff";
+      ctx.textAlign="center";
+      ctx.font="1000 18px system-ui";
+      ctx.fillText("ROBOT FLEX!",x+boss.w/2,y-38);
+    }
+  }else{
+    ctx.fillStyle="#704426";
+    roundRect(ctx,x,y,boss.w,boss.h,Math.min(25,boss.w*.15),true,false);
+    ctx.fillStyle="#39200f";
+    ctx.fillRect(x+boss.w*.12,y+boss.h*.08,boss.w*.76,boss.h*.12);
+    ctx.fillStyle="#fff";
+    ctx.fillRect(x+boss.w*.18,y+boss.h*.26,boss.w*.18,boss.h*.13);
+    ctx.fillRect(x+boss.w*.64,y+boss.h*.26,boss.w*.18,boss.h*.13);
+    ctx.fillStyle="#c51616";
+    ctx.fillRect(x+boss.w*.25,y+boss.h*.3,boss.w*.06,boss.h*.055);
+    ctx.fillRect(x+boss.w*.69,y+boss.h*.3,boss.w*.06,boss.h*.055);
+    ctx.fillStyle="#f0d0a9";
+    ctx.fillRect(x+boss.w*.24,y+boss.h*.54,boss.w*.52,boss.h*.2);
+
+    if(flex){
+      ctx.strokeStyle="#704426";
+      ctx.lineWidth=Math.max(10,boss.w*.1);
+      ctx.beginPath();
+      ctx.moveTo(x+boss.w*.12,y+boss.h*.58);
+      ctx.lineTo(x-boss.w*.12,y+boss.h*.36);
+      ctx.lineTo(x-boss.w*.22,y+boss.h*.53);
+      ctx.moveTo(x+boss.w*.88,y+boss.h*.58);
+      ctx.lineTo(x+boss.w*1.12,y+boss.h*.36);
+      ctx.lineTo(x+boss.w*1.22,y+boss.h*.53);
+      ctx.stroke();
+    }
+  }
+
+  // Boss HP bar and name.
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#111";
+  ctx.fillRect(x,y+boss.h+8,boss.w,13);
+  ctx.fillStyle=mega?"#68f0ff":"#5bd36c";
+  ctx.fillRect(x,y+boss.h+8,boss.w*Math.max(0,boss.hp/boss.maxHp),13);
+  ctx.fillStyle="#fff";
+  ctx.textAlign="center";
+  ctx.font=`1000 ${Math.max(12,Math.min(20,boss.w*.12))}px system-ui`;
+  ctx.fillText(boss.name.toUpperCase(),x+boss.w/2,y-13);
+  ctx.restore();
+
+  if(time<boss.speechUntil)drawSpeechBubble(x+boss.w/2,y,boss.speechText,mega?280:220);
+}
+
+function drawRary(){
+  if(!player.ridingRary)return;
+  const x=player.x-cameraX,y=player.y+34;
+  ctx.save();
+  ctx.shadowColor="#ffd84d";
+  ctx.shadowBlur=30;
+  ctx.fillStyle="rgba(255,216,77,.35)";
+  ctx.beginPath();
+  ctx.ellipse(x+20,y+28,74+Math.sin(time*8)*5,45+Math.sin(time*8)*3,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#d29a2e";ctx.beginPath();ctx.ellipse(x+18,y+30,50,24,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#8b5b1d";ctx.beginPath();ctx.arc(x-12,y+18,26,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#e4b742";ctx.beginPath();ctx.arc(x-12,y+18,16,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#111";ctx.beginPath();ctx.arc(x-17,y+14,3,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#8b5b1d";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+52,y+28);ctx.quadraticCurveTo(x+76,y+6,x+84,y+29);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="1000 12px system-ui";ctx.textAlign="center";ctx.fillText("MAX AURA",x+18,y+69);
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const x=player.x-cameraX,y=player.y;drawRary();ctx.save();
+  if(danceOn()){ctx.translate(x+19,y+28);ctx.rotate(Math.sin(time*12)*.28);ctx.translate(-(x+19),-(y+28));ctx.fillStyle="#fff";ctx.font="1000 22px system-ui";ctx.fillText("♪",x-15,y);ctx.fillText("♫",x+43,y+2)}
+  if(achOn()){ctx.strokeStyle="#7ffcff";ctx.lineWidth=5;ctx.beginPath();ctx.arc(x+19,y+27,39+Math.sin(time*9)*3,0,Math.PI*2);ctx.stroke()}
+  ctx.fillStyle="#6c7480";ctx.fillRect(x-8,y+24,9,27);if(keys.Space){ctx.fillStyle="#ffb126";ctx.beginPath();ctx.moveTo(x-6,y+50);ctx.lineTo(x-1,y+70+Math.sin(time*30)*4);ctx.lineTo(x+2,y+50);ctx.fill()}
+  ctx.fillStyle="#173a67";ctx.fillRect(x+5,y,28,13);ctx.fillStyle="#f2c6a3";ctx.fillRect(x+8,y+12,23,17);ctx.fillStyle="#202733";ctx.fillRect(x+(player.facing>0?25:9),y+17,4,4);ctx.fillStyle="#173a67";ctx.fillRect(x+6,y+29,27,18);ctx.fillStyle="#ffd83d";ctx.fillRect(x+13,y+32,5,5);ctx.fillRect(x+22,y+32,5,5);ctx.fillRect(x+6,y+38,5,9);ctx.fillRect(x+28,y+38,5,9);ctx.fillStyle="#2f394a";ctx.fillRect(x+6,y+47,10,7);ctx.fillRect(x+23,y+47,10,7);
+  ctx.strokeStyle="#f2c6a3";ctx.lineWidth=7;ctx.lineCap="round";
+  if(handsOn()){
+    const leftUp=Math.sin(time*13)>0;
+    ctx.beginPath();
+    if(leftUp){
+      ctx.moveTo(x+7,y+35);ctx.lineTo(x-2,y+12);ctx.lineTo(x+1,y-3);
+      ctx.moveTo(x+32,y+35);ctx.lineTo(x+42,y+50);ctx.lineTo(x+43,y+58);
+    }else{
+      ctx.moveTo(x+7,y+35);ctx.lineTo(x-3,y+50);ctx.lineTo(x-4,y+58);
+      ctx.moveTo(x+32,y+35);ctx.lineTo(x+41,y+12);ctx.lineTo(x+38,y-3);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawShot(s){
+  const x=s.x-cameraX;
+  const y=s.y;
+  const r=s.r;
+
+  ctx.save();
+  ctx.fillStyle="#ff4fa3";
+  ctx.strokeStyle="#8a174f";
+  ctx.lineWidth=2.2;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle="rgba(255,255,255,.42)";
+  ctx.beginPath();
+  ctx.arc(x-r*.28,y-r*.30,Math.max(1.4,r*.16),0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+function drawFood(f){const x=f.x-cameraX,y=f.y;if(f.kind==="broccoli"){ctx.fillStyle="#2d8e42";ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.arc(x-8,y-4,7,0,Math.PI*2);ctx.arc(x+7,y-5,7,0,Math.PI*2);ctx.arc(x,y-10,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8fcb68";ctx.fillRect(x-3,y+7,6,10)}else if(f.kind==="carrot"){ctx.fillStyle="#f17d26";ctx.beginPath();ctx.moveTo(x-8,y-8);ctx.lineTo(x+9,y-6);ctx.lineTo(x,y+15);ctx.closePath();ctx.fill();ctx.fillStyle="#3c9a4a";ctx.fillRect(x-5,y-16,3,9);ctx.fillRect(x+2,y-16,3,9)}else if(f.kind==="apple"){ctx.fillStyle="#db3f3f";ctx.beginPath();ctx.arc(x,y,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5b3c1b";ctx.fillRect(x-1,y-17,3,7)}else if(f.kind==="banana"){ctx.strokeStyle="#f3cf3d";ctx.lineWidth=8;ctx.beginPath();ctx.arc(x,y-4,14,.2,2.4);ctx.stroke()}else{ctx.fillStyle="#59a94f";ctx.beginPath();ctx.arc(x-6,y,6,0,Math.PI*2);ctx.arc(x+2,y-3,6,0,Math.PI*2);ctx.arc(x+8,y+3,6,0,Math.PI*2);ctx.fill()}}
+function drawParticles(){for(const p of particles){ctx.globalAlpha=clamp(p.life*2,0,1);ctx.fillStyle=p.color;ctx.fillRect(p.x-cameraX,p.y,p.size,p.size)}ctx.globalAlpha=1}
+
+function drawRaryCelebration(){
+  if(time>=raryCelebrationUntil)return;
+  const remaining=raryCelebrationUntil-time;
+  const alpha=clamp(remaining/1.0,0,1);
+
+  ctx.save();
+  ctx.globalAlpha=Math.min(.68,alpha);
+  ctx.translate(W/2,H/2);
+  ctx.rotate(time*.65);
+  for(let i=0;i<20;i++){
+    ctx.rotate(Math.PI*2/20);
+    ctx.fillStyle=i%2?"#ffd84d":"#fff3a4";
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(42,-18);
+    ctx.lineTo(W*.8,-5);
+    ctx.lineTo(42,18);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha=Math.min(1,alpha+.25);
+  ctx.textAlign="center";
+  ctx.shadowColor="#000";
+  ctx.shadowBlur=12;
+  ctx.fillStyle="#fff";
+  ctx.font="1000 64px system-ui";
+  ctx.fillText("🦁 RARY! RARY! 🦁",W/2,H*.29);
+  ctx.fillStyle="#ffd84d";
+  ctx.font="1000 48px system-ui";
+  ctx.fillText("MAX AURA!",W/2,H*.39);
+  ctx.fillStyle="#fff";
+  ctx.font="1000 22px system-ui";
+  ctx.fillText("EXTRA HIT • FASTER • ABSOLUTE LEGEND",W/2,H*.46);
+  ctx.restore();
+}
+
+function draw(){
+  drawSky();drawTheme();drawPlatforms();drawExit();for(const p of wordPickups)drawWord(p);for(const d of decoyPickups)drawDecoy(d);for(const b of bonuses)drawBonus(b);drawRaryPickup();drawKey();drawBossPowerups();for(const e of enemies)drawMrLee(e);drawBoss();drawBossBin();for(const f of foods)drawFood(f);for(const s of shots)drawShot(s);drawPlayer();drawParticles();drawRaryCelebration();
+  if(player.x<370){ctx.fillStyle="#111827df";roundRect(ctx,60,552,330,48,10,true,false);ctx.fillStyle="#fff";ctx.font="900 17px system-ui";ctx.textAlign="left";ctx.fillText(level===1?"TUTORIAL: collect NOL → fly with SPACE → throw with F":level<=7?"Find the next number — look UP too! ↑":"MIXED NUMBERS — know the next word!",84,582)}
+}
+
+function loop(t){if(!running)return;const dt=Math.min(.033,(t-last)/1000||0);last=t;update(dt);draw();requestAnimationFrame(loop)}
+function press(code){
+  if(code==="KeyF"){
+    if(running)shoot();
+    keys[code]=true;
+    return;
+  }
+  if(code==="Space"&&!keys.Space&&running&&player.onGround){
+    player.vy=-610;
+    player.onGround=false;
+  }
+  keys[code]=true;
+}
+function release(code){
+  keys[code]=false;
+}
+
+window.addEventListener("keydown",e=>{if(["Space","ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.code))e.preventDefault();if(e.repeat&&e.code==="KeyF")return;if(e.code==="KeyR"){initLevel(level);if(!running){running=true;last=performance.now();requestAnimationFrame(loop)}return}press(e.code)},{passive:false});
+window.addEventListener("keyup",e=>release(e.code));
+document.querySelectorAll(".touchBtn").forEach(btn=>{
+  const code=btn.dataset.key;
+  const down=e=>{e.preventDefault();try{btn.setPointerCapture(e.pointerId)}catch(_){}btn.classList.add("held");press(code)};
+  const up=e=>{e.preventDefault();btn.classList.remove("held");release(code)};
+  btn.addEventListener("pointerdown",down,{passive:false});
+  btn.addEventListener("pointerup",up,{passive:false});
+  btn.addEventListener("pointercancel",up,{passive:false});
+  btn.addEventListener("lostpointercapture",()=>{btn.classList.remove("held");release(code)});
+});
+window.addEventListener("contextmenu",e=>e.preventDefault());
+window.addEventListener("touchmove",e=>{if(document.documentElement.dataset.input==="touch")e.preventDefault()},{passive:false});
+startBtn.onclick=()=>{
+  unlockGameAudio();
+  if(document.documentElement.dataset.input==="touch"){
+    const el=document.documentElement;
+    try{if(el.requestFullscreen)el.requestFullscreen().catch(()=>{})}catch(e){}
+  }
+  overlay.style.display="none";
+  initLevel(1);
+  running=true;
+  last=performance.now();
+  document.body.dataset.gameRunning="true";
+  requestAnimationFrame(loop);
+};
+initLevel(1);
+draw();
+document.body.dataset.gameReady="true";
+if(new URLSearchParams(location.search).has("autotest"))startBtn.click();
+})();
+</script>
 </body>
 </html>
